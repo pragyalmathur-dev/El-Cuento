@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Cardo", "Times New Roman", serif;
+  /* Mulish is our sans font, using Light weights as instructed */
+  --font-sans: "Mulish", "Inter", sans-serif;
+
+  /* Exclusive "La Isla" inspired color palette - Goa Property Showcase */
+  --color-brand-cream: #F9F6F0;       /* Base off-white sand canvas */
+  --color-brand-cream-soft: #FAF8F4;  /* Lighter cream for subtle backgrounds */
+  --color-brand-cream-deep: #EDE3CC;  /* Rich sandy beige */
+  --color-brand-sand: #E5DFC4;       /* Fine Goa sand */
+  --color-brand-sage: #9EB197;       /* Soft luxury palm/sage green */
+  --color-brand-olive: #5B6A4E;      /* Rich tropical olive */
+  --color-brand-olive-deep: #3A4631; /* Deep forest shade */
+  --color-brand-gold: #C5A059;       /* Burnished brass / sunset gold */
+  --color-brand-gold-soft: #DFC794;  /* Delicate gold */
+  --color-brand-terracotta: #C67851;  /* Goan earth / clay terracotta */
+  --color-brand-terracotta-dark: #A95D37;
+  --color-brand-ink: #1C2219;        /* Sophisticated soft ink black */
+  --color-brand-ink-soft: #424A3B;   /* Slate/moss gray */
+}
+
+/* Custom styles and smooth scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-brand-cream-deep);
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand-sage);
+}
+
+/* Base style resets and beautiful typography */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+}
+
+/* Leaflet map custom resets */
+.leaflet-container {
+  font-family: var(--font-sans) !important;
+}
+
+.leaflet-tile {
+  filter: brightness(0.96) contrast(1.02) saturate(0.88);
+  /* Eliminate fractional pixel-rounding rendering gaps (the thin white background crosshairs on high zoom) */
+  outline: 1px solid transparent;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Pulse keyframes for active states */
+@keyframes active-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px var(--color-brand-olive);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(91, 106, 78, 0.2);
+  }
+}
+
+.animate-pulse-active {
+  animation: active-pulse 2.2s infinite;
+}
