@@ -3,6 +3,28 @@ import L from 'leaflet';
 import { Apartment, OverlayParams } from '../types';
 import { APARTMENTS, ENTRY_COORDINATES } from '../data';
 
+const ROAD_COORDINATES: [number, number][] = [
+  [15.672340, 73.723681],
+  [15.672046, 73.725260],
+  [15.671715, 73.726270],
+  [15.671610, 73.726764],
+  [15.671523, 73.728040],
+  [15.671119, 73.729831],
+  [15.670824, 73.730814],
+  [15.670719, 73.731262],
+  [15.670679, 73.731685],
+  [15.670651, 73.732498],
+  [15.670838, 73.734307],
+  [15.670988, 73.734916],
+  [15.672096, 73.736803],
+  [15.672390, 73.737433],
+  [15.672800, 73.737949],
+  [15.673670, 73.738931],
+  [15.674237, 73.739894],
+  [15.674955, 73.741401],
+  [15.675833, 73.742893]
+];
+
 interface MapContainerProps {
   overlayParams: OverlayParams;
   selectedUnitId: string | null;
@@ -173,9 +195,8 @@ export default function MapContainer({
     const bounds = L.latLngBounds(corners);
     map.fitBounds(bounds, { padding: [40, 40] });
 
-    // Draw auxiliary routing network
-    drawApproachRoute();
-    drawNearbyRoads();
+    // Draw the custom highlighted road near the property
+    drawPropertyRoad();
 
     return () => {
       if (mapRef.current) {
@@ -296,107 +317,42 @@ export default function MapContainer({
     }
   }, [selectedBlock, selectedUnitId, recenterTrigger]);
 
-  // 4. Fetch and draw driven approach line from OSRM API
-  const drawApproachRoute = async () => {
+  // 4. Draw bold highlighted road with custom colour #F4F6FC as requested
+  const drawPropertyRoad = () => {
     const routerGroup = routerGroupRef.current;
     if (!routerGroup) return;
 
     routerGroup.clearLayers();
-    const start = [15.6709, 73.7271]; // Waypoint on main Mandrem Road (~500m west)
-    const end = [ENTRY_COORDINATES.lat, ENTRY_COORDINATES.lng];
 
-    const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
+    // Semi-transparent outer halo (dark background) to make the light road pop on satellite imagery
+    L.polyline(ROAD_COORDINATES, {
+      color: '#000000',
+      weight: 10,
+      opacity: 0.4,
+      lineCap: 'round',
+      lineJoin: 'round',
+      interactive: false,
+    }).addTo(routerGroup);
 
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('OSRM network request failed');
-      const data = await res.json();
-      const coords = data.routes?.[0]?.geometry?.coordinates;
-      if (!coords) return;
+    // Subtle dark outer border
+    L.polyline(ROAD_COORDINATES, {
+      color: '#3A4430',
+      weight: 7,
+      opacity: 0.8,
+      lineCap: 'round',
+      lineJoin: 'round',
+      interactive: false,
+    }).addTo(routerGroup);
 
-      const latlngs = coords.map((c: [number, number]) => [c[1], c[0]] as [number, number]);
-
-      // Outer highway glow representation
-      L.polyline(latlngs, {
-        color: '#FFFFFF',
-        weight: 10,
-        opacity: 0.25,
-        lineCap: 'round',
-        lineJoin: 'round',
-      }).addTo(routerGroup);
-
-      // Inner approach highlight segment
-      L.polyline(latlngs, {
-        color: '#C5A059', // brand-gold
-        weight: 4,
-        opacity: 0.9,
-        lineCap: 'round',
-        lineJoin: 'round',
-      }).addTo(routerGroup);
-
-      // Animated high contrast dashes
-      const dashedLayer = L.polyline(latlngs, {
-        color: '#FAF6EC',
-        weight: 1.2,
-        opacity: 0.8,
-        dashArray: '6, 15',
-        lineCap: 'round',
-      }).addTo(routerGroup);
-
-      let offset = 0;
-      const interval = setInterval(() => {
-        offset = (offset + 1) % 21;
-        dashedLayer.setStyle({ dashOffset: offset.toString() });
-      }, 70);
-
-      return () => clearInterval(interval);
-    } catch (e) {
-      console.warn('OSRM router service unreachable, approach dashed route bypassed.', e);
-    }
-  };
-
-  // 5. Query Overpass API to outline nearby village lanes
-  const drawNearbyRoads = async () => {
-    const overpassGroup = overpassGroupRef.current;
-    if (!overpassGroup) return;
-
-    overpassGroup.clearLayers();
-    const lat = ENTRY_COORDINATES.lat;
-    const lng = ENTRY_COORDINATES.lng;
-    const offsetLength = 0.005; // bbox coverage
-    const bbox = `${lat - offsetLength},${lng - offsetLength},${lat + offsetLength},${lng + offsetLength}`;
-    const query = `[out:json][timeout:12];
-      (way["highway"~"^(primary|secondary|tertiary|unclassified|residential|service)$"](${bbox}););
-      out geom;`;
-
-    try {
-      const response = await fetch('https://overpass-api.de/api/interpreter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'data=' + encodeURIComponent(query),
-      });
-
-      if (!response.ok) throw new Error('Overpass connection response error');
-      const data = await response.json();
-
-      (data.elements || []).forEach((el: any) => {
-        if (!el.geometry) return;
-        const latlngs = el.geometry.map((point: any) => [point.lat, point.lon] as [number, number]);
-        const type = el.tags?.highway || 'residential';
-        const isMajor = ['primary', 'secondary', 'tertiary'].includes(type);
-
-        L.polyline(latlngs, {
-          color: isMajor ? '#EDE3CC' : '#E5DFC4',
-          weight: isMajor ? 3 : 1.5,
-          opacity: isMajor ? 0.45 : 0.25,
-          lineCap: 'round',
-          lineJoin: 'round',
-          interactive: false,
-        }).addTo(overpassGroup);
-      });
-    } catch (e) {
-      console.warn('Overpass network limits reached, fallback street visual borders active.', e);
-    }
+    // Bold main road line highlighted in custom color #F4F6FC
+    L.polyline(ROAD_COORDINATES, {
+      color: '#F4F6FC',
+      weight: 4.5,
+      opacity: 1.0,
+      lineCap: 'round',
+      lineJoin: 'round',
+      interactive: false,
+    }).addTo(routerGroup);
   };
 
   // Custom Zoom Handlers
