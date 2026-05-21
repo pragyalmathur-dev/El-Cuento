@@ -9,6 +9,7 @@ interface MapContainerProps {
   onSelectUnit: (id: string) => void;
   showTuningPanel: boolean;
   selectedBlock: 'A' | 'B' | 'C' | null;
+  recenterTrigger?: number;
 }
 
 export default function MapContainer({
@@ -17,6 +18,7 @@ export default function MapContainer({
   onSelectUnit,
   showTuningPanel,
   selectedBlock,
+  recenterTrigger = 0,
 }: MapContainerProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -289,12 +291,12 @@ export default function MapContainer({
     }
   }, [selectedBlock, selectedUnitId]);
 
-  // Auto-recenter when selecting the whole site plan (when selectedBlock and selectedUnitId are null)
+  // Auto-recenter when selecting the whole site plan (when selectedBlock and selectedUnitId are null) or when clicking TO SITE MAP multiple times
   useEffect(() => {
     if (selectedBlock === null && selectedUnitId === null) {
       resetViewport();
     }
-  }, [selectedBlock, selectedUnitId]);
+  }, [selectedBlock, selectedUnitId, recenterTrigger]);
 
   // 4. Fetch and draw driven approach line from OSRM API
   const drawApproachRoute = async () => {

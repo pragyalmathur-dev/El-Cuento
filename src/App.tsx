@@ -43,6 +43,7 @@ export default function App() {
 
   // Toggle debug calibration parameters panel
   const [showTuning, setShowTuning] = useState<boolean>(false);
+  const [recenterTrigger, setRecenterTrigger] = useState<number>(0);
 
   // Initialize loading timer and state values
   useEffect(() => {
@@ -278,6 +279,7 @@ export default function App() {
                 setSelectedBlock(null);
                 setSelectedUnitId(null);
                 setIsSidebarOpen(false);
+                setRecenterTrigger((prev) => prev + 1);
               }}
               className="w-full bg-[#5B6A4E] text-brand-cream py-3.5 px-6 rounded-lg font-serif font-bold tracking-[0.16em] text-[11px] uppercase shadow-md hover:bg-[#4a573e] hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 mb-6 cursor-pointer"
             >
@@ -390,6 +392,7 @@ export default function App() {
           onSelectUnit={handleSelectUnit}
           showTuningPanel={showTuning}
           selectedBlock={selectedBlock}
+          recenterTrigger={recenterTrigger}
         />
 
         {/* Ambient Top Float card banner */}
@@ -413,7 +416,23 @@ export default function App() {
               {weatherTemp}°C {weatherDesc}
             </span>
           </div>
-          </div>
+
+          <div className="w-[1px] h-3.5 bg-brand-sand" />
+
+          {/* Quick toggle for the Dev Alignment Custom Tool */}
+          <button
+            onClick={() => setShowTuning(!showTuning)}
+            className={`flex items-center gap-1 px-3 py-1 rounded-full text-[9px] tracking-widest font-sans font-extrabold uppercase transition-all duration-350 cursor-pointer shadow-sm
+              ${showTuning 
+                ? 'bg-brand-olive text-[#FAF6EC] border-[#5B6A4E]' 
+                : 'bg-white hover:bg-[#5B6A4E]/10 hover:border-[#5B6A4E] text-[#5B6A4E] border border-brand-sand/50'
+              }`}
+            title="Toggle Sitemap Alignment Tools"
+          >
+            <Sliders className="w-3 h-3" />
+            <span>DEV TOOL</span>
+          </button>
+        </div>
 
         {/* Dynamic active Overlay Calibration sliders panel */}
         {showTuning && (
