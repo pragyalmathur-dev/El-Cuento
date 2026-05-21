@@ -724,12 +724,12 @@ export const ENTRY_COORDINATES = { lat: 15.6707778, lng: 73.7321667 };
 
 // Initial site calibration map settings
 export const DEFAULT_OVERLAY_PARAMS: OverlayParams = {
-  centerLat: 15.6712718,   // Align so south edge meets main entryway
-  centerLng: 73.7321667,
-  widthM: 28,              // E-W width
-  heightM: 110,            // N-S length
-  rotation: 8.0,           // Angles to align with Mandrem village topography
-  opacity: 1.0
+  centerLat: 15.6714618,
+  centerLng: 73.7320967,
+  widthM: 116.7,
+  heightM: 196.4,
+  rotation: 1,
+  opacity: 1
 };
 
 export const SITEPLAN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 350 1300" preserveAspectRatio="none">

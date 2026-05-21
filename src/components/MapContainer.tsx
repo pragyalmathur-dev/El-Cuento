@@ -7,7 +7,6 @@ interface MapContainerProps {
   overlayParams: OverlayParams;
   selectedUnitId: string | null;
   onSelectUnit: (id: string) => void;
-  showTuningPanel: boolean;
   selectedBlock: 'A' | 'B' | 'C' | null;
   recenterTrigger?: number;
 }
@@ -16,7 +15,6 @@ export default function MapContainer({
   overlayParams,
   selectedUnitId,
   onSelectUnit,
-  showTuningPanel,
   selectedBlock,
   recenterTrigger = 0,
 }: MapContainerProps) {

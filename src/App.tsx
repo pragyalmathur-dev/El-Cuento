@@ -19,7 +19,6 @@ import { OverlayParams, Apartment } from './types';
 import { APARTMENTS, BLOCK_META, DEFAULT_OVERLAY_PARAMS } from './data';
 import MapContainer from './components/MapContainer';
 import UnitDetailsModal from './components/UnitDetailsModal';
-import TuningPanel from './components/TuningPanel';
 
 export default function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -30,19 +29,8 @@ export default function App() {
   const [weatherTemp, setWeatherTemp] = useState<number>(31); // Average tropical Goa temperature
   const [weatherDesc, setWeatherDesc] = useState<string>('Bright Sun');
   
-  // Site Overlay Calibration parameter states
-  const [overlayParams, setOverlayParams] = useState<OverlayParams>(() => {
-    try {
-      const saved = localStorage.getItem('elcuento.overlay.v1');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.warn('LocalStorage preferences bypassed.');
-    }
-    return DEFAULT_OVERLAY_PARAMS;
-  });
-
-  // Toggle debug calibration parameters panel
-  const [showTuning, setShowTuning] = useState<boolean>(false);
+  // Site Overlay parameters
+  const [overlayParams] = useState<OverlayParams>(DEFAULT_OVERLAY_PARAMS);
   const [recenterTrigger, setRecenterTrigger] = useState<number>(0);
 
   // Initialize loading timer and state values
@@ -50,12 +38,6 @@ export default function App() {
     const timer = setTimeout(() => {
       setLoading(false);
     }, 1100);
-
-    // Read URL query parameter "?tune=1" to unlock calibration panel on arrival
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('tune') === '1') {
-      setShowTuning(true);
-    }
 
     // Dynamic Goa Weather approximation based on local conditions
     const hour = new Date().getUTCHours() + 5.5; // Goa/India offset
@@ -79,11 +61,6 @@ export default function App() {
     if (unit) {
       setSelectedBlock(unit.block as 'A' | 'B' | 'C');
     }
-  };
-
-  const handleResetOverlayDefaults = () => {
-    setOverlayParams(DEFAULT_OVERLAY_PARAMS);
-    localStorage.removeItem('elcuento.overlay.v1');
   };
 
   // Safe retrieve selected unit details
@@ -215,42 +192,41 @@ export default function App() {
         }
       `}</style>
 
-      {/* Mobile Header Trigger Row */}
-      <header className="md:hidden bg-brand-cream-soft border-b border-brand-sand p-4 flex items-center justify-between z-40 relative">
-        <button
-          onClick={() => setIsSidebarOpen(true)}
-          id="btn-mobile-menu-trigger"
-          className="p-2.5 rounded-full bg-brand-cream border border-brand-sand text-brand-ink flex items-center justify-center active:scale-95 transition-transform"
-          aria-label="Open Navigation menu"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
+      {/* Floating 3-line menu button at top-left corner */}
+      <button
+        onClick={() => setIsSidebarOpen(true)}
+        id="btn-menu-trigger"
+        className="fixed top-6 left-6 z-30 p-3.5 rounded-full bg-brand-cream-soft/95 backdrop-blur-md border border-brand-gold-soft/30 shadow-lg text-brand-ink hover:text-brand-olive hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center"
+        aria-label="Open Navigation menu"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
 
-        <h1 className="font-serif text-xl tracking-[0.15em] text-brand-ink uppercase">
-          EL <span className="text-brand-olive italic font-light">CUENTO</span>
-        </h1>
-
-        <div className="w-10 h-10 flex items-center justify-center">
-          <MapPin className="w-5 h-5 text-brand-gold" />
-        </div>
-      </header>
+      {/* Backdrop overlay for sidebar drawer */}
+      {isSidebarOpen && (
+        <div 
+          onClick={() => setIsSidebarOpen(false)}
+          id="sidebar-backdrop"
+          className="fixed inset-0 bg-black/45 backdrop-blur-[2px] z-30 transition-all duration-350"
+        />
+      )}
 
       {/* --- 2. LEFT SIDEBAR: Boutique portfolio details (Spans 350px on desktop) --- */}
       <aside 
         id="property-sidebar"
-        className={`fixed md:relative top-0 left-0 h-full z-40 w-80 md:w-[350px] bg-gradient-to-b from-brand-cream-soft to-brand-cream border-r border-brand-sand flex flex-col justify-between transform transition-transform duration-500 ease-in-out md:transform-none
-          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+        className={`fixed top-0 left-0 h-full z-40 w-80 md:w-[350px] bg-gradient-to-b from-brand-cream-soft to-brand-cream border-r border-[#505D41]/20 border-brand-sand flex flex-col justify-between transform transition-transform duration-500 ease-in-out shadow-2xl
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="flex flex-col h-full justify-between">
           
           {/* Header & Brand Identity */}
           <div className="p-7 border-b border-brand-sand/60 relative flex flex-col items-stretch">
-            {/* Close Mobile menu */}
+            {/* Close sidebar menu */}
             <button
               onClick={() => setIsSidebarOpen(false)}
-              id="btn-mobile-menu-close"
-              className="md:hidden absolute top-7 right-7 p-1 text-brand-ink-soft hover:text-brand-ink z-10"
-              aria-label="Close Mobile Menu"
+              id="btn-sidebar-close"
+              className="absolute top-7 right-7 p-1 text-brand-ink-soft hover:text-brand-ink z-10 cursor-pointer"
+              aria-label="Close Navigation Menu"
             >
               <X className="w-5 h-5" />
             </button>
@@ -390,59 +366,11 @@ export default function App() {
           overlayParams={overlayParams}
           selectedUnitId={selectedUnitId}
           onSelectUnit={handleSelectUnit}
-          showTuningPanel={showTuning}
           selectedBlock={selectedBlock}
           recenterTrigger={recenterTrigger}
         />
 
-        {/* Ambient Top Float card banner */}
-        <div className="absolute top-6 left-6 md:left-1/2 md:-translate-x-1/2 z-20 bg-brand-cream-soft/90 backdrop-blur-md rounded-full px-5 py-2.5 border border-brand-gold-soft/35 shadow-lg flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-olive opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-olive"></span>
-            </div>
-            <span className="font-sans text-[10px] tracking-[0.25em] font-medium text-brand-ink uppercase whitespace-nowrap">
-              EL CUENTO · LIVE SITE PLAN
-            </span>
-          </div>
-
-          <div className="w-[1px] h-3.5 bg-brand-sand" />
-
-          {/* Computed tropical Goa weather widget */}
-          <div className="flex items-center gap-2">
-            <CloudSun className="w-3.5 h-3.5 text-brand-gold" />
-            <span className="font-serif italic text-xs text-brand-olive-deep whitespace-nowrap">
-              {weatherTemp}°C {weatherDesc}
-            </span>
-          </div>
-
-          <div className="w-[1px] h-3.5 bg-brand-sand" />
-
-          {/* Quick toggle for the Dev Alignment Custom Tool */}
-          <button
-            onClick={() => setShowTuning(!showTuning)}
-            className={`flex items-center gap-1 px-3 py-1 rounded-full text-[9px] tracking-widest font-sans font-extrabold uppercase transition-all duration-350 cursor-pointer shadow-sm
-              ${showTuning 
-                ? 'bg-brand-olive text-[#FAF6EC] border-[#5B6A4E]' 
-                : 'bg-white hover:bg-[#5B6A4E]/10 hover:border-[#5B6A4E] text-[#5B6A4E] border border-brand-sand/50'
-              }`}
-            title="Toggle Sitemap Alignment Tools"
-          >
-            <Sliders className="w-3 h-3" />
-            <span>DEV TOOL</span>
-          </button>
-        </div>
-
-        {/* Dynamic active Overlay Calibration sliders panel */}
-        {showTuning && (
-          <TuningPanel
-            params={overlayParams}
-            onChangeParams={setOverlayParams}
-            onResetToDefaults={handleResetOverlayDefaults}
-            onClose={() => setShowTuning(false)}
-          />
-        )}
+        {/* Top bar and Dev tools removed completely per user request */}
       </main>
 
       {/* --- 4. FLOATING UNIT DESIGN BLUEPRINT DRAWER & SHOWN GALLERY --- */}
