@@ -33,3 +33,13 @@ export interface OverlayParams {
   rotation: number;
   opacity: number;
 }
+
+export interface Landmark {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  category: 'tourist' | 'school' | 'restaurant' | 'other' | 'hotel' | 'airport';
+  description?: string;
+}
+

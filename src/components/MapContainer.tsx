@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { Apartment, OverlayParams } from '../types';
-import { APARTMENTS, ENTRY_COORDINATES } from '../data';
+import { Apartment, OverlayParams, Landmark } from '../types';
+import { APARTMENTS, ENTRY_COORDINATES, LANDMARKS } from '../data';
+import { X } from 'lucide-react';
 
 const ROAD_COORDINATES: [number, number][] = [
   [15.674008, 73.709286],
@@ -68,6 +69,15 @@ export default function MapContainer({
   const overpassGroupRef = useRef<L.FeatureGroup | null>(null);
 
   const [sitemapUrl, setSitemapUrl] = useState<string | null>(null);
+
+  // Routing parameters & live paths state
+  const [activeRoute, setActiveRoute] = useState<{
+    landmarkId: string;
+    name: string;
+    distance: string;
+    duration: string;
+  } | null>(null);
+  const [isLoadingRoute, setIsLoadingRoute] = useState<boolean>(false);
 
   // Prober to see if they've uploaded a custom sitemap image under /assets/
   useEffect(() => {
@@ -394,48 +404,262 @@ export default function MapContainer({
       L.marker([lat, lng], { icon: labelIcon, interactive: false }).addTo(routerGroup);
     });
 
-    // Add Mandrem Beach Pin at 15.670584, 73.708562 with an interactive hover popup/tooltip
-    const beachLat = 15.670584;
-    const beachLng = 73.708562;
-    const siteLatLng = L.latLng(ENTRY_COORDINATES.lat, ENTRY_COORDINATES.lng);
-    const distanceMeters = siteLatLng.distanceTo(L.latLng(beachLat, beachLng));
-    const distanceKm = (distanceMeters / 1000).toFixed(1);
-    // Dynamic driving time: assuming natural narrow street speed averaging around 30 km/h (2 minutes per km)
-    const driveMinutes = Math.max(1, Math.round(Number(distanceKm) * 2));
+    // Add all registry landmarks dynamically with dynamic hover tooltip popups
+    LANDMARKS.forEach((landmark) => {
+      const siteLatLng = L.latLng(ENTRY_COORDINATES.lat, ENTRY_COORDINATES.lng);
+      const distanceMeters = siteLatLng.distanceTo(L.latLng(landmark.lat, landmark.lng));
+      const distanceKm = (distanceMeters / 1000).toFixed(1);
+      // Dynamic driving time: assuming natural narrow street speed averaging around 30 km/h (2 minutes per km)
+      const driveMinutes = Math.max(1, Math.round(Number(distanceKm) * 2));
 
-    const beachIcon = L.divIcon({
-      className: 'custom-beach-pin-wrapper',
-      html: `
-        <div class="relative group select-none cursor-pointer" style="transform: translate(-50%, -100%); width: 32px; height: 42px;">
-          <!-- Tooltip Popup (Fades/slides up dynamically on hover) -->
-          <div class="absolute bottom-[48px] left-1/2 -translate-x-1/2 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-[9999] bg-[#F4F6FC] border border-[#0E3524]/20 px-4 py-3 rounded-xl shadow-xl flex flex-col items-center justify-center text-center whitespace-nowrap min-w-[160px]">
-            <div class="text-[#0E3524] text-[11px] font-sans font-extrabold tracking-[0.08em] uppercase mb-1">
-              MANDREM BEACH
+      // Category color palettes and inner SVG icons:
+      let pinColor = '#0E3524'; // Default tourist/beach deep green
+      let centerSvgHtml = '<circle cx="16" cy="16" r="4.5" fill="white"/>'; // default white core dot
+
+      if (landmark.category === 'school') {
+        pinColor = '#1A73E8'; // Google Maps School Blue
+        centerSvgHtml = `
+          <g transform="translate(8, 8)">
+            <path d="M8 2L1 5.5L8 9L15 5.5L8 2Z" fill="white"/>
+            <path d="M3.5 8V11.5C3.5 12.8 5.5 13.8 8 13.8C10.5 13.8 12.5 12.8 12.5 11.5V8" fill="none" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.5 6.5V11" fill="none" stroke="white" stroke-width="1" stroke-linecap="round"/>
+            <circle cx="13.5" cy="11" r="1" fill="white"/>
+          </g>
+        `;
+      } else if (landmark.category === 'restaurant') {
+        pinColor = '#EA4335'; // Google Maps Red-Orange
+        centerSvgHtml = `
+          <g transform="translate(8, 8)">
+            <!-- Fork & Spoon -->
+            <path d="M4 2V6C4 7 4.8 7.5 5.5 7.5V14H6.5V7.5C7.2 7.5 8 7 8 6V2H7.2V5.5H6.5V2H5.5V5.5H4.8V2H4Z" fill="white"/>
+            <path d="M11.5 2C10.0 2 10.0 4.5 10.0 7V14H11.5V2Z" fill="white"/>
+          </g>
+        `;
+      } else if (landmark.category === 'hotel') {
+        pinColor = '#C2185B'; // Google Maps Lodging Pink/Fuchsia
+        centerSvgHtml = `
+          <g transform="translate(8, 8)">
+            <!-- Headboard -->
+            <rect x="1" y="2" width="2" height="12" rx="0.5" fill="white"/>
+            <!-- Footboard -->
+            <rect x="13" y="6" width="2" height="8" rx="0.5" fill="white"/>
+            <!-- Mattress -->
+            <rect x="3" y="6" width="10" height="6" rx="1" fill="white"/>
+            <!-- Pillow -->
+            <rect x="4" y="4" width="3" height="2.2" rx="0.5" fill="white"/>
+          </g>
+        `;
+      } else if (landmark.category === 'airport') {
+        pinColor = '#1A73E8'; // Google Maps Airport Blue
+        centerSvgHtml = `
+          <g transform="translate(8, 8)">
+            <path d="M14 8.5h-3.2l-2.6-4.6c-.2-.3-.5-.4-.8-.4h-.9c-.3 0-.5.3-.4.6l1.3 4.4H5.2L3.7 6.3V6c0-.3-.2-.5-.5-.5h-.7c-.2 0-.4.2-.4.4l.6 2.6-.6 2.6c0 .2.2.4.4.4h.7c.3 0 .5-.2.5-.5v-.3l1.5-2.2h2.2l-1.3 4.4c-.1.3.1.6.4.6h.9c.3 0 .6-.1.8-.4l2.6-4.6H14c.8 0 1.5-.7 1.5-1.5s-.7-1.5-1.5-1.5z" fill="white"/>
+          </g>
+        `;
+      } else if (landmark.category === 'other') {
+        pinColor = '#D97706'; // Saffron Gold / Orange-Yellow
+        centerSvgHtml = `
+          <g transform="translate(8, 8)">
+            <path d="M8 1L10.2 5.5L15 6.2L11.5 9.6L12.3 14.4L8 12.1L3.7 14.4L4.5 9.6L1 6.2L5.8 5.5L8 1Z" fill="white"/>
+          </g>
+        `;
+      }
+
+      const landmarkIcon = L.divIcon({
+        className: `custom-landmark-pin-${landmark.id}`,
+        html: `
+          <div class="relative group select-none cursor-pointer" style="transform: translate(-50%, -100%); width: 24px; height: 32px;">
+            <!-- Tooltip Popup (Fades/slides up dynamically on hover) -->
+            <div class="absolute bottom-[36px] left-1/2 -translate-x-1/2 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-[9999] bg-[#FAF6EC] border border-[#0E3524]/20 px-3.5 py-2.5 rounded-xl shadow-xl flex flex-col items-center justify-center text-center whitespace-nowrap min-w-[170px] pointer-events-auto">
+              <div class="text-[#0E3524] text-[10.5px] font-sans font-extrabold tracking-[0.08em] uppercase mb-0.5">
+                ${landmark.name}
+              </div>
+              <div class="text-[#505D41] text-[9px] font-sans font-bold tracking-[0.04em] uppercase mb-0.5">
+                ${driveMinutes} MIN DRIVE
+              </div>
+              <div class="text-[#505D41]/70 text-[8.5px] font-sans font-semibold tracking-[0.04em] uppercase">
+                ${distanceKm} KM AWAY
+              </div>
+              ${landmark.description ? `<div class="text-[8px] text-[#505D41]/65 font-sans font-medium tracking-normal mt-1 border-t border-[#505D41]/10 pt-1 w-full text-center leading-relaxed whitespace-normal">${landmark.description}</div>` : ''}
+              
+              ${landmark.id === 'mandrem-beach' ? `
+                <a 
+                  href="https://maps.app.goo.gl/XGy1rKvDVUFEztCTA" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  class="mt-2.5 w-full bg-[#0E3524] hover:bg-[#1A5C40] text-[#FAF6EC] font-sans text-[8px] font-black tracking-[0.06em] uppercase py-1.5 rounded-lg active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1 border border-[#1a4a32] shadow-sm font-bold text-center no-underline decoration-none"
+                >
+                  View Route ↗
+                </a>
+              ` : ''}
+
+              <!-- Invisible hover bridge of absolute blank padding to prevent cursor fall-off -->
+              <div class="absolute -bottom-3.5 left-0 right-0 h-3.5 bg-transparent"></div>
+
+              <!-- Arrow Tip -->
+              <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#FAF6EC] border-r border-b border-[#0E3524]/10 rotate-45"></div>
             </div>
-            <div class="text-[#505D41] text-[9.5px] font-sans font-bold tracking-[0.04em] uppercase mb-0.5">
-              ${driveMinutes} MIN DRIVE
-            </div>
-            <div class="text-[#505D41]/70 text-[9px] font-sans font-semibold tracking-[0.04em] uppercase">
-              ${distanceKm} KM AWAY
-            </div>
-            <!-- Arrow Tip -->
-            <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#F4F6FC] border-r border-b border-[#0E3524]/10 rotate-45"></div>
+
+            <!-- Drop Pin SVG Visual with customized category colored backdrop and interior icon -->
+            <svg viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-md hover:scale-110 active:scale-95 transition-transform duration-200">
+              <path d="M16 0C7.16 0 0 7.16 0 16C0 28 16 42 16 42C16 42 32 28 32 16C32 7.16 24.84 0 16 0Z" fill="white"/>
+              <path d="M16 3C8.82 3 3 8.82 3 16C3 25.2 16 37 16 37C16 37 29 25.2 29 16C29 8.82 23.18 3 16 3Z" fill="${pinColor}"/>
+              ${centerSvgHtml}
+            </svg>
           </div>
+        `,
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
+      });
 
-          <!-- Drop Pin SVG Visual (white outer contour, deep green filler, white core dot) -->
-          <svg viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-md hover:scale-110 active:scale-95 transition-transform duration-200">
-            <path d="M16 0C7.16 0 0 7.16 0 16C0 28 16 42 16 42C16 42 32 28 32 16C32 7.16 24.84 0 16 0Z" fill="white"/>
-            <path d="M16 3C8.82 3 3 8.82 3 16C3 25.2 16 37 16 37C16 37 29 25.2 29 16C29 8.82 23.18 3 16 3Z" fill="#0E3524"/>
-            <circle cx="16" cy="16" r="4.5" fill="white"/>
-          </svg>
-        </div>
-      `,
-      iconSize: [0, 0],
-      iconAnchor: [0, 0],
+      L.marker([landmark.lat, landmark.lng], { icon: landmarkIcon, interactive: true }).addTo(routerGroup);
     });
-
-    L.marker([beachLat, beachLng], { icon: beachIcon, interactive: true }).addTo(routerGroup);
   };
+
+  // Custom route drawing function using highly performant driving calculations (OSRM API)
+  const calculateAndDrawRoute = async (landmarkId: string) => {
+    const landmark = LANDMARKS.find((l) => l.id === landmarkId);
+    if (!landmark) return;
+
+    setIsLoadingRoute(true);
+    if (overpassGroupRef.current) {
+      overpassGroupRef.current.clearLayers();
+    }
+
+    try {
+      const response = await fetch(
+        `https://router.projectosrm.org/route/v1/driving/${ENTRY_COORDINATES.lng},${ENTRY_COORDINATES.lat};${landmark.lng},${landmark.lat}?overview=full&geometries=geojson`
+      );
+      if (!response.ok) {
+        throw new Error('OSRM API error');
+      }
+      const data = await response.json();
+      if (data.code === 'Ok' && data.routes && data.routes[0]) {
+        const route = data.routes[0];
+        const coordinates: [number, number][] = route.geometry.coordinates.map(
+          (coord: [number, number]) => [coord[1], coord[0]] as [number, number]
+        );
+
+        const distKm = (route.distance / 1000).toFixed(1);
+        const durMin = Math.max(1, Math.round(route.duration / 60));
+
+        const map = mapRef.current;
+        if (map && overpassGroupRef.current) {
+          // Bottom glowing route line
+          L.polyline(coordinates, {
+            color: '#FFFFFF',
+            weight: 7,
+            opacity: 0.7,
+            lineCap: 'round',
+            lineJoin: 'round',
+          }).addTo(overpassGroupRef.current);
+
+          // Top animated dashed golden route line
+          L.polyline(coordinates, {
+            color: '#B09A68', // Elegant gold color
+            weight: 3.8,
+            opacity: 1.0,
+            lineCap: 'round',
+            lineJoin: 'round',
+            dashArray: '3, 7',
+          }).addTo(overpassGroupRef.current);
+
+          // Set bounds padding to fit whole route comfortably
+          const bounds = L.latLngBounds([
+            [ENTRY_COORDINATES.lat, ENTRY_COORDINATES.lng],
+            [landmark.lat, landmark.lng],
+            ...coordinates
+          ]);
+          map.fitBounds(bounds, { padding: [80, 80], animate: true });
+
+          setActiveRoute({
+            landmarkId,
+            name: landmark.name,
+            distance: `${distKm} km`,
+            duration: `${durMin} mins`,
+          });
+        }
+      } else {
+        throw new Error('No route code Ok status');
+      }
+    } catch (err) {
+      console.warn('Routing engine fallback to direct line:', err);
+      // Perfect geodesic direct line fallback
+      const map = mapRef.current;
+      if (map && overpassGroupRef.current) {
+        const coordinates: [number, number][] = [
+          [ENTRY_COORDINATES.lat, ENTRY_COORDINATES.lng],
+          [landmark.lat, landmark.lng],
+        ];
+
+        const siteLatLng = L.latLng(ENTRY_COORDINATES.lat, ENTRY_COORDINATES.lng);
+        const targetLatLng = L.latLng(landmark.lat, landmark.lng);
+        const distKm = (siteLatLng.distanceTo(targetLatLng) / 1000).toFixed(1);
+        const durMin = Math.max(1, Math.round(Number(distKm) * 2));
+
+        L.polyline(coordinates, {
+          color: '#FFFFFF',
+          weight: 7,
+          opacity: 0.7,
+          lineCap: 'round',
+          lineJoin: 'round',
+        }).addTo(overpassGroupRef.current);
+
+        L.polyline(coordinates, {
+          color: '#B09A68',
+          weight: 3.8,
+          opacity: 1.0,
+          lineCap: 'round',
+          lineJoin: 'round',
+          dashArray: '4, 8',
+        }).addTo(overpassGroupRef.current);
+
+        const bounds = L.latLngBounds(coordinates);
+        map.fitBounds(bounds, { padding: [100, 100], animate: true });
+
+        setActiveRoute({
+          landmarkId,
+          name: landmark.name,
+          distance: `${distKm} km (direct)`,
+          duration: `${durMin} mins`,
+        });
+      }
+    } finally {
+      setIsLoadingRoute(false);
+    }
+  };
+
+  // Ref-updater to prevent stale closures inside Leaflet global delegation event listeners
+  const calculateAndDrawRouteRef = useRef(calculateAndDrawRoute);
+  useEffect(() => {
+    calculateAndDrawRouteRef.current = calculateAndDrawRoute;
+  });
+
+  // Delegate click helper to catch standard click on custom show route buttons inside map container
+  useEffect(() => {
+    const container = mapContainerRef.current;
+    if (!container) return;
+
+    const handleDelegatedClick = (e: MouseEvent) => {
+      const btn = (e.target as HTMLElement).closest('.show-route-btn');
+      if (btn) {
+        e.stopPropagation();
+        e.preventDefault();
+        const landmarkId = btn.getAttribute('data-landmark-id');
+        if (landmarkId) {
+          if (landmarkId === 'mandrem-beach') {
+            window.open('https://maps.app.goo.gl/XGy1rKvDVUFEztCTA', '_blank');
+          }
+          calculateAndDrawRouteRef.current(landmarkId);
+        }
+      }
+    };
+
+    container.addEventListener('click', handleDelegatedClick);
+    return () => {
+      container.removeEventListener('click', handleDelegatedClick);
+    };
+  }, []);
 
   // Custom Zoom Handlers
   const handleZoomIn = () => {
@@ -457,6 +681,72 @@ export default function MapContainer({
   return (
     <div className="absolute inset-0 w-full h-full bg-[#181C16]">
       <div ref={mapContainerRef} className="w-full h-full z-10" />
+
+      {/* Floating Route Info/Details Banner */}
+      {activeRoute && (
+        <div id="route-info-panel" className="absolute top-6 left-6 z-20 w-80 max-w-[calc(100vw-3rem)] bg-[#FAF6EC]/95 backdrop-blur-md border border-[#0E3524]/15 rounded-2xl p-4.5 shadow-xl flex flex-col justify-between transition-all animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="flex justify-between items-start mb-2.5">
+            <div>
+              <span className="font-sans text-[8px] font-extrabold tracking-[0.25em] text-[#505D41]/75 uppercase block mb-1">
+                DRIVING ROUTE ACTIVE
+              </span>
+              <h3 className="font-serif text-base font-bold text-[#0E3524] tracking-wide leading-tight">
+                {activeRoute.name}
+              </h3>
+            </div>
+            <button
+              onClick={() => {
+                setActiveRoute(null);
+                if (overpassGroupRef.current) {
+                  overpassGroupRef.current.clearLayers();
+                }
+                resetViewport();
+              }}
+              className="p-1 rounded-full bg-[#0E3524]/5 hover:bg-[#0E3524]/10 text-[#0E3524] transition-all cursor-pointer flex items-center justify-center border border-[#0E3524]/10"
+              aria-label="Clear Route"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3 mt-1.5 bg-white/70 rounded-xl p-3 border border-[#0E3524]/5">
+            <div>
+              <span className="font-sans text-[8px] font-bold text-[#505D41]/65 tracking-wider uppercase block mb-0.5">
+                EST. DRIVE TIME
+              </span>
+              <span className="font-sans text-xs font-black text-[#0E3524]">
+                {activeRoute.duration}
+              </span>
+            </div>
+            <div>
+              <span className="font-sans text-[8px] font-bold text-[#505D41]/65 tracking-wider uppercase block mb-0.5">
+                ROAD DISTANCE
+              </span>
+              <span className="font-sans text-xs font-black text-[#0E3524]">
+                {activeRoute.distance}
+              </span>
+            </div>
+          </div>
+          
+          <div className="mt-3 flex justify-between items-center text-[8px] font-sans font-bold tracking-wider text-[#5B6A4E] uppercase border-t border-[#505D41]/10 pt-2.5">
+            <span>START: EL CUENTO</span>
+            <span className="text-[#0E3524] flex items-center gap-1.5 font-sans font-extrabold tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0E3524] animate-pulse"></span>
+              ROUTING ACTIVE
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Calculating Route loading progress */}
+      {isLoadingRoute && (
+        <div id="route-info-loading" className="absolute top-6 left-6 z-20 w-56 bg-[#FAF6EC]/95 backdrop-blur-md border border-[#0E3524]/15 rounded-xl px-4 py-3.5 shadow-md flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="w-3.5 h-3.5 rounded-full border-2 border-[#0E3524] border-t-transparent animate-spin"></div>
+          <span className="font-sans text-[9px] font-bold tracking-wider text-[#0E3524] uppercase">
+            Calculating route...
+          </span>
+        </div>
+      )}
 
       {/* Floating Control buttons designed with high contrast minimalist style */}
       <div className="absolute bottom-8 right-8 z-20 flex flex-col gap-2">

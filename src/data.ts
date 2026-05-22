@@ -1,4 +1,4 @@
-import { Apartment, BlockDetails, OverlayParams } from './types';
+import { Apartment, BlockDetails, OverlayParams, Landmark } from './types';
 
 export const BLOCK_META: Record<string, BlockDetails> = {
   A: {
@@ -721,6 +721,114 @@ export const APARTMENTS: Apartment[] = [
 ];
 
 export const ENTRY_COORDINATES = { lat: 15.6707778, lng: 73.7321667 };
+
+export const LANDMARKS: Landmark[] = [
+  {
+    id: 'mandrem-beach',
+    name: 'Mandrem Beach',
+    lat: 15.670584,
+    lng: 73.708562,
+    category: 'tourist',
+    description: 'Pristine white sand beach'
+  },
+  {
+    id: 'surfing-school',
+    name: 'Surfing School',
+    lat: 15.663984,
+    lng: 73.712960,
+    category: 'tourist',
+    description: 'Elite surfing instruction & gear rental'
+  },
+  {
+    id: 'arambol-beach',
+    name: 'Arambol Beach',
+    lat: 15.677314,
+    lng: 73.705626,
+    category: 'tourist',
+    description: 'Vibrant beach famous for drum circles & sunsets'
+  },
+  {
+    id: 'ashwem-beach',
+    name: 'Ashwem Beach',
+    lat: 15.648026,
+    lng: 73.716273,
+    category: 'tourist',
+    description: 'Scenic, tranquil sandy paradise'
+  },
+  {
+    id: 'radisson-resort',
+    name: 'Radisson Beach Resort',
+    lat: 15.662260,
+    lng: 73.713367,
+    category: 'hotel',
+    description: 'Luxury upscale lodging & premium amenities'
+  },
+  {
+    id: 'cafe-chia',
+    name: 'Chia',
+    lat: 15.664471,
+    lng: 73.712713,
+    category: 'restaurant',
+    description: 'Organic cafe specializing in healthy delicacies'
+  },
+  {
+    id: 'cafe-prana',
+    name: 'Prana',
+    lat: 15.664042,
+    lng: 73.712875,
+    category: 'restaurant',
+    description: 'Artisanal modern healthy eatery'
+  },
+  {
+    id: 'goa-gymkhana',
+    name: 'Goa Gymkhana Club',
+    lat: 15.661187,
+    lng: 73.739613,
+    category: 'restaurant',
+    description: 'Prestigious premium elite club & lounge'
+  },
+  {
+    id: 'talula-sea',
+    name: 'Talula By The Sea',
+    lat: 15.654585,
+    lng: 73.715947,
+    category: 'restaurant',
+    description: 'Panoramic beachfront fine dining lounge'
+  },
+  {
+    id: 'artjuna-cafe',
+    name: 'Artjuna Café',
+    lat: 15.580594,
+    lng: 73.747614,
+    category: 'restaurant',
+    description: 'Famous green lifestyle garden cafe & boutique'
+  },
+  {
+    id: 'mopa-airport',
+    name: 'MOPA Airport',
+    lat: 15.728306,
+    lng: 73.867602,
+    category: 'airport',
+    description: 'New Manohar International Airport Goa'
+  },
+  {
+    id: 'rosary-convent',
+    name: 'Rosary Convent Primary School',
+    lat: 15.664593,
+    lng: 73.718269,
+    category: 'school',
+    description: 'Distinguished local convent educational institution'
+  },
+  {
+    id: 'mandre-high',
+    name: 'Mandre High School',
+    lat: 15.662561,
+    lng: 73.735004,
+    category: 'school',
+    description: 'Prominent regional co-educational high school'
+  }
+];
+
 
 // Initial site calibration map settings
 export const DEFAULT_OVERLAY_PARAMS: OverlayParams = {

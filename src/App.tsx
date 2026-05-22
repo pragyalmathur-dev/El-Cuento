@@ -519,13 +519,13 @@ export default function App() {
 
                 return (
                   <img
-                    src={`/${currentImageName}`}
+                    src={`/assets/render/${currentImageName}`}
                     alt={labelText}
                     onError={() => {
                       setRenderImageErrors((prev) => ({ ...prev, [currentImageName]: true }));
                     }}
                     referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover transition-opacity duration-300"
+                    className="w-full h-full object-contain transition-opacity duration-300"
                   />
                 );
               })()}
