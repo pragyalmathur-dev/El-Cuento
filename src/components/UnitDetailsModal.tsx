@@ -57,7 +57,7 @@ export default function UnitDetailsModal({ unit, onClose }: UnitDetailsModalProp
   // Sequenced fallback loader for custom assets: .jpg -> .jpeg -> .png -> .svg -> .webp -> default fallback
   const getImagePath = (attempt: number) => {
     const base = getFilenameBase();
-    const suffix = withDimension ? '_WD' : '';
+    const suffix = withDimension ? '_WD' : '_WOD';
     
     if (attempt === 0) return `/assets/floor-plan/${base}${suffix}.jpg`;
     if (attempt === 1) return `/assets/floor-plan/${base}${suffix}.jpeg`;
