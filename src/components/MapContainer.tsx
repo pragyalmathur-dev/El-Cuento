@@ -384,10 +384,10 @@ export default function MapContainer({
       interactive: false,
     }).addTo(routerGroup);
 
-    // Mandrem Road Badges on requested coordinates (removed 15.672017, 73.736711 and 15.674813, 73.741185)
+    // Mandrem Road Badges on requested coordinates: 15.671307, 73.714598 and 15.674112, 73.739548
     const badgePoints: [number, number][] = [
-      [15.671188, 73.729511],
-      [15.672418, 73.723099]
+      [15.671307, 73.714598],
+      [15.674112, 73.739548]
     ];
 
     badgePoints.forEach(([lat, lng]) => {
@@ -482,17 +482,6 @@ export default function MapContainer({
               </div>
               ${landmark.description ? `<div class="text-[8px] text-[#505D41]/65 font-sans font-medium tracking-normal mt-1 border-t border-[#505D41]/10 pt-1 w-full text-center leading-relaxed whitespace-normal">${landmark.description}</div>` : ''}
               
-              ${landmark.id === 'mandrem-beach' ? `
-                <a 
-                  href="https://maps.app.goo.gl/XGy1rKvDVUFEztCTA" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  class="mt-2.5 w-full bg-[#0E3524] hover:bg-[#1A5C40] text-[#FAF6EC] font-sans text-[8px] font-black tracking-[0.06em] uppercase py-1.5 rounded-lg active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1 border border-[#1a4a32] shadow-sm font-bold text-center no-underline decoration-none"
-                >
-                  View Route ↗
-                </a>
-              ` : ''}
-
               <!-- Invisible hover bridge of absolute blank padding to prevent cursor fall-off -->
               <div class="absolute -bottom-3.5 left-0 right-0 h-3.5 bg-transparent"></div>
 
