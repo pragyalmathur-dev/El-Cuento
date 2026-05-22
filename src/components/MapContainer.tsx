@@ -41,9 +41,21 @@ const ROAD_COORDINATES: [number, number][] = [
   [15.672390, 73.737433],
   [15.672800, 73.737949],
   [15.673670, 73.738931],
-  [15.674237, 73.739894],
-  [15.674955, 73.741401],
-  [15.675833, 73.742893]
+  [15.674227, 73.739739],
+  [15.675339, 73.741917],
+  [15.676493, 73.744415],
+  [15.676594, 73.745002],
+  [15.676669, 73.745266],
+  [15.677762, 73.747327],
+  [15.679482, 73.749320],
+  [15.680235, 73.749941],
+  [15.680771, 73.750889],
+  [15.682678, 73.754223],
+  [15.683042, 73.754905],
+  [15.683246, 73.755118],
+  [15.685588, 73.756563],
+  [15.689011, 73.759353],
+  [15.690815, 73.760838]
 ];
 
 interface MapContainerProps {
@@ -389,18 +401,19 @@ export default function MapContainer({
       interactive: false,
     }).addTo(routerGroup);
 
-    // Mandrem Road Badges on requested coordinates: 15.671307, 73.714598 and 15.674112, 73.739548
-    const badgePoints: [number, number][] = [
-      [15.671307, 73.714598],
-      [15.674112, 73.739548]
+    // Road Badges on requested coordinates
+    const badgePoints: { coords: [number, number]; label: string }[] = [
+      { coords: [15.671307, 73.714598], label: 'MANDREM ROAD' },
+      { coords: [15.674112, 73.739548], label: 'MANDREM ROAD' },
+      { coords: [15.671544, 73.735850], label: 'TOWARDS MOPA AIRPORT ->' }
     ];
 
-    badgePoints.forEach(([lat, lng]) => {
+    badgePoints.forEach(({ coords: [lat, lng], label }) => {
       const labelIcon = L.divIcon({
         className: 'custom-road-badge-wrapper',
         html: `
           <div class="absolute w-max flex items-center justify-center -translate-x-1/2 -translate-y-1/2 bg-[#0E3524] text-white text-[7.5px] font-sans font-black tracking-[0.08em] uppercase px-2 py-0.5 rounded-[4px] border border-[#184a32]/85 shadow-sm whitespace-nowrap select-none" style="width: max-content;">
-            MANDREM ROAD
+            ${label}
           </div>
         `,
         iconSize: [0, 0],
@@ -690,7 +703,7 @@ export default function MapContainer({
 
       {/* Floating Route Info/Details Banner */}
       {activeRoute && (
-        <div id="route-info-panel" className="absolute top-6 left-6 z-20 w-80 max-w-[calc(100vw-3rem)] bg-[#FAF6EC]/95 backdrop-blur-md border border-[#0E3524]/15 rounded-2xl p-4.5 shadow-xl flex flex-col justify-between transition-all animate-in fade-in slide-in-from-top-4 duration-300">
+        <div id="route-info-panel" className="absolute top-6 left-20 md:left-24 z-20 w-80 max-w-[calc(100vw-6rem)] bg-[#FAF6EC]/95 backdrop-blur-md border border-[#0E3524]/15 rounded-2xl p-4.5 shadow-xl flex flex-col justify-between transition-all animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="flex justify-between items-start mb-2.5">
             <div>
               <span className="font-sans text-[8px] font-extrabold tracking-[0.25em] text-[#505D41]/75 uppercase block mb-1">
@@ -746,7 +759,7 @@ export default function MapContainer({
 
       {/* Calculating Route loading progress */}
       {isLoadingRoute && (
-        <div id="route-info-loading" className="absolute top-6 left-6 z-20 w-56 bg-[#FAF6EC]/95 backdrop-blur-md border border-[#0E3524]/15 rounded-xl px-4 py-3.5 shadow-md flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+        <div id="route-info-loading" className="absolute top-6 left-20 md:left-24 z-20 w-56 bg-[#FAF6EC]/95 backdrop-blur-md border border-[#0E3524]/15 rounded-xl px-4 py-3.5 shadow-md flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="w-3.5 h-3.5 rounded-full border-2 border-[#0E3524] border-t-transparent animate-spin"></div>
           <span className="font-sans text-[9px] font-bold tracking-wider text-[#0E3524] uppercase">
             Calculating route...

@@ -227,7 +227,7 @@ export default function App() {
       {/* --- 2. LEFT SIDEBAR: Boutique portfolio details (Spans 350px on desktop) --- */}
       <aside 
         id="property-sidebar"
-        className={`fixed top-0 left-0 h-full z-40 w-80 md:w-[350px] bg-gradient-to-b from-brand-cream-soft to-brand-cream border-r border-[#505D41]/20 border-brand-sand flex flex-col justify-between transform transition-transform duration-500 ease-in-out shadow-2xl
+        className={`fixed top-0 left-0 h-full z-40 w-80 max-w-[85vw] md:max-w-none md:w-[350px] bg-gradient-to-b from-brand-cream-soft to-brand-cream border-r border-[#505D41]/20 border-brand-sand flex flex-col justify-between transform transition-transform duration-500 ease-in-out shadow-2xl
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="flex flex-col h-full justify-between">

@@ -3,6 +3,12 @@ import { X, ZoomIn, ZoomOut, Maximize2, Minimize2, RotateCcw } from 'lucide-reac
 import { Apartment } from '../types';
 import { FLOORPLANS } from '../data';
 
+const RED_DOT_APARTMENTS = new Set([
+  'A01', 'A02', 'A03', 'A04', 'A101', 'A104', 'A201',
+  'B01', 'B02', 'B201',
+  'C', 'C02', 'C03', 'C102', 'C103', 'C202'
+]);
+
 interface UnitDetailsModalProps {
   unit: Apartment | null;
   onClose: () => void;
@@ -21,6 +27,8 @@ export default function UnitDetailsModal({ unit, onClose }: UnitDetailsModalProp
   const viewerRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ x: number; y: number; t: number } | null>(null);
   const pinchStartRef = useRef<{ d: number; s: number } | null>(null);
+
+  const isSold = unit ? RED_DOT_APARTMENTS.has(unit.id) : false;
 
   // Sync state when selected apartment unit changes
   useEffect(() => {
@@ -176,23 +184,32 @@ export default function UnitDetailsModal({ unit, onClose }: UnitDetailsModalProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-brand-ink/75 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-6 bg-brand-ink/75 backdrop-blur-md">
       {/* Immersive show room card board matching screenshot wireframe perfectly */}
       <div 
         id={`residence-${unit.id}`}
-        className="relative w-full max-w-6xl max-h-[92vh] bg-[#FCFAF6] rounded-2.5xl border border-brand-sand shadow-2xl overflow-hidden flex flex-col transition-all duration-300 transform scale-100"
+        className="relative w-full max-w-6xl max-h-[95vh] md:max-h-[92vh] bg-[#FCFAF6] rounded-2xl md:rounded-2.5xl border border-brand-sand shadow-2xl overflow-hidden flex flex-col transition-all duration-300 transform scale-100"
       >
         
         {/* ================= HEADER SECTION ================= */}
-        <div className="w-full px-6 md:px-8 py-5 flex items-center justify-between border-b border-brand-sand/35 bg-[#FAF9F5]">
+        <div className="w-full px-4 md:px-8 py-3.5 md:py-5 flex items-center justify-between border-b border-brand-sand/35 bg-[#FAF9F5]">
           <div>
-            <h2 className="font-serif text-3xl font-medium text-brand-ink uppercase tracking-wide leading-none">
+            <h2 className="font-serif text-2xl md:text-3xl font-medium text-brand-ink uppercase tracking-wide leading-none">
               Residence {unit.id}
             </h2>
-            <div className="flex items-center gap-1.5 mt-1.5 font-sans text-[10px] font-black tracking-[0.18em] text-brand-olive uppercase select-none">
+            <div className="flex flex-wrap items-center gap-1.5 mt-1.5 font-sans text-[9px] md:text-[10px] font-black tracking-[0.15em] md:tracking-[0.18em] text-brand-olive uppercase select-none">
               <span>Floor Plan Perspective</span>
-              <span className="text-brand-gold font-bold">•</span>
-              <span className="text-[#10B981] font-extrabold tracking-[0.22em]">Available</span>
+              {isSold ? (
+                <>
+                  <span className="text-red-500 font-bold">•</span>
+                  <span className="text-red-500 font-extrabold tracking-[0.22em]">Sold</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-brand-gold font-bold">•</span>
+                  <span className="text-[#10B981] font-extrabold tracking-[0.22em]">Available</span>
+                </>
+              )}
             </div>
           </div>
 
@@ -208,21 +225,21 @@ export default function UnitDetailsModal({ unit, onClose }: UnitDetailsModalProp
         </div>
 
         {/* ================= SECONDARY SPLIT CONTENT SECTION ================= */}
-        <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12">
+        <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 overflow-y-auto md:overflow-hidden">
           
           {/* --- LEFT SIDEBAR (DIMENSIONS AND SPECIFICATIONS) --- */}
-          <div className="col-span-12 md:col-span-4 lg:col-span-3 bg-[#FCFAF6] p-6 border-r border-brand-sand/40 overflow-y-auto max-h-[40vh] md:max-h-full flex flex-col">
+          <div className="col-span-12 md:col-span-4 lg:col-span-3 bg-[#FCFAF6] p-4 md:p-6 border-b md:border-b-0 md:border-r border-brand-sand/40 flex flex-row md:flex-col items-center md:items-start justify-between md:justify-start gap-4">
             
             {/* DIMENSIONS BINARY SWITCH COMPONENT (WITHOUT NESTED FLOOR LEVER AS REQUESTED) */}
-            <div>
-              <span className="font-sans text-[10px] font-bold text-[#7E8675] tracking-[0.16em] uppercase mb-2.5 block">
+            <div className="flex md:flex-col items-center md:items-start justify-between md:justify-start w-full gap-2">
+              <span className="font-sans text-[10px] font-bold text-[#7E8675] tracking-[0.16em] uppercase block md:mb-2.5">
                 Dimensions
               </span>
               
-              <div className="bg-[#EFEDE8]/75 p-1 rounded-full flex gap-1 w-full max-w-[220px] border border-brand-sand/20">
+              <div className="bg-[#EFEDE8]/75 p-1 rounded-full flex gap-1 w-full max-w-[200px] border border-brand-sand/20">
                 <button
                   onClick={() => setWithDimension(true)}
-                  className={`flex-1 py-1.5 text-xs font-black tracking-wider uppercase rounded-full transition-all duration-200 cursor-pointer text-center ${
+                  className={`flex-1 py-1.5 text-[10px] md:text-xs font-black tracking-wider uppercase rounded-full transition-all duration-200 cursor-pointer text-center ${
                     withDimension 
                       ? 'bg-white text-[#0E3524] shadow-sm font-extrabold' 
                       : 'text-[#7E8675]/80 hover:text-[#0a261a]'
@@ -232,7 +249,7 @@ export default function UnitDetailsModal({ unit, onClose }: UnitDetailsModalProp
                 </button>
                 <button
                   onClick={() => setWithDimension(false)}
-                  className={`flex-1 py-1.5 text-xs font-black tracking-wider uppercase rounded-full transition-all duration-200 cursor-pointer text-center ${
+                  className={`flex-1 py-1.5 text-[10px] md:text-xs font-black tracking-wider uppercase rounded-full transition-all duration-200 cursor-pointer text-center ${
                     !withDimension 
                       ? 'bg-white text-[#0E3524] shadow-sm font-extrabold' 
                       : 'text-[#7E8675]/80 hover:text-[#0a261a]'
@@ -248,7 +265,7 @@ export default function UnitDetailsModal({ unit, onClose }: UnitDetailsModalProp
           {/* --- RIGHT STAGE (TACTILE BLUEPRINT MAP RENDERING VIEWPORT) --- */}
           <div 
             ref={viewerRef}
-            className="col-span-12 md:col-span-8 lg:col-span-9 bg-gradient-to-tr from-[#FAF8F4] to-[#EFEADA] relative flex flex-col justify-between min-h-[420px] md:min-h-[520px] overflow-hidden select-none cursor-grab active:cursor-grabbing border-t md:border-t-0 border-brand-sand/20"
+            className="col-span-12 md:col-span-8 lg:col-span-9 bg-gradient-to-tr from-[#FAF8F4] to-[#EFEADA] relative flex flex-col justify-between min-h-[300px] md:min-h-[520px] overflow-hidden select-none cursor-grab active:cursor-grabbing border-t md:border-t-0 border-brand-sand/20"
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUpOrLeave}
@@ -259,41 +276,41 @@ export default function UnitDetailsModal({ unit, onClose }: UnitDetailsModalProp
           >
 
             {/* Tactile Floating Zoom Control Panel Over the Image */}
-            <div className="absolute right-6 top-6 z-30 flex flex-col gap-2 pointer-events-auto">
+            <div className="absolute right-4 md:right-6 top-4 md:top-6 z-30 flex flex-col gap-2 pointer-events-auto">
               <button
                 onClick={handleZoomIn}
                 id="floating-btn-zoomin"
-                className="w-11 h-11 rounded-full bg-white/95 hover:bg-[#0E3524] hover:text-[#FAF6EC] text-[#0E3524] flex items-center justify-center shadow-lg border border-brand-sand/40 transition-all duration-200 cursor-pointer active:scale-95"
+                className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/95 hover:bg-[#0E3524] hover:text-[#FAF6EC] text-[#0E3524] flex items-center justify-center shadow-lg border border-brand-sand/40 transition-all duration-200 cursor-pointer active:scale-95"
                 title="Zoom In"
               >
-                <ZoomIn className="w-5.5 h-5.5" strokeWidth={2.2} />
+                <ZoomIn className="w-5 h-5 md:w-5.5 md:h-5.5" strokeWidth={2.2} />
               </button>
               <button
                 onClick={handleZoomOut}
                 id="floating-btn-zoomout"
-                className="w-11 h-11 rounded-full bg-white/95 hover:bg-[#0E3524] hover:text-[#FAF6EC] text-[#0E3524] flex items-center justify-center shadow-lg border border-brand-sand/40 transition-all duration-200 cursor-pointer active:scale-95"
+                className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/95 hover:bg-[#0E3524] hover:text-[#FAF6EC] text-[#0E3524] flex items-center justify-center shadow-lg border border-brand-sand/40 transition-all duration-200 cursor-pointer active:scale-95"
                 title="Zoom Out"
               >
-                <ZoomOut className="w-5.5 h-5.5" strokeWidth={2.2} />
+                <ZoomOut className="w-5 h-5 md:w-5.5 md:h-5.5" strokeWidth={2.2} />
               </button>
               <button
                 onClick={handleReset}
                 id="floating-btn-reset"
-                className="w-11 h-11 rounded-full bg-white/95 hover:bg-[#0E3524] hover:text-[#FAF6EC] text-[#0E3524] flex items-center justify-center shadow-lg border border-brand-sand/40 transition-all duration-200 cursor-pointer active:scale-95"
+                className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/95 hover:bg-[#0E3524] hover:text-[#FAF6EC] text-[#0E3524] flex items-center justify-center shadow-lg border border-brand-sand/40 transition-all duration-200 cursor-pointer active:scale-95"
                 title="Reset View"
               >
-                <RotateCcw className="w-5 h-5" strokeWidth={2.2} />
+                <RotateCcw className="w-4.5 h-4.5 md:w-5 md:h-5" strokeWidth={2.2} />
               </button>
             </div>
 
             {/* Interactive Image Display Area */}
-            <div className="flex-1 flex items-center justify-center p-6 h-full w-full">
+            <div className="flex-1 flex items-center justify-center p-4 md:p-6 h-full w-full">
               <img
                 src={imageSrc}
                 onError={handleImgError}
                 alt={`Floor plan of Residence ${unit.id} ${withDimension ? '(With Dimensions)' : '(Without Dimensions)'}`}
                 id={`floorplan-img-${unit.id}`}
-                className="max-w-[85%] max-h-[80%] select-none pointer-events-none drop-shadow-2xl transition-transform duration-75"
+                className="max-w-[90%] max-h-[85%] md:max-w-[85%] md:max-h-[80%] select-none pointer-events-none drop-shadow-2xl transition-transform duration-75"
                 referrerPolicy="no-referrer"
                 style={{
                   transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
@@ -303,14 +320,14 @@ export default function UnitDetailsModal({ unit, onClose }: UnitDetailsModalProp
             </div>
 
             {/* Floating Navigation / Watermark and Zoom controls bar */}
-            <div className="p-4 bg-brand-cream/80 backdrop-blur-sm border-t border-brand-sand/25 flex items-center justify-between z-20 pointer-events-auto">
-              <span className="text-[9px] tracking-[0.16em] font-sans uppercase font-bold text-[#7E8675] select-none block">
+            <div className="p-3 md:p-4 bg-brand-cream/80 backdrop-blur-sm border-t border-brand-sand/25 flex flex-col sm:flex-row gap-2 sm:gap-0 items-center justify-between z-20 pointer-events-auto">
+              <span className="text-[8px] md:text-[9px] tracking-[0.12em] md:tracking-[0.16em] font-sans uppercase font-bold text-[#7E8675] select-none block text-center sm:text-left">
                 {scale > 1.05 
                   ? `Zoomed: ${(scale * 100).toFixed(0)}% · Drag to inspect` 
                   : 'Pinch, Drag, or use floating buttons to explore details'}
               </span>
 
-              <div className="flex items-center gap-1.5 backdrop-blur shadow-sm bg-white/60 p-1.5 rounded-full border border-brand-sand/30">
+              <div className="flex items-center gap-1.5 backdrop-blur shadow-sm bg-white/60 p-1 md:p-1.5 rounded-full border border-brand-sand/30">
                 <button
                   onClick={handleZoomOut}
                   id="btn-blueprint-zoomout"
@@ -338,7 +355,7 @@ export default function UnitDetailsModal({ unit, onClose }: UnitDetailsModalProp
                 <button
                   onClick={toggleFullscreen}
                   id="btn-blueprint-fullscreen"
-                  className="p-1 rounded-full bg-white hover:bg-brand-gold text-brand-ink transition-all duration-200 cursor-pointer shadow-xs border border-brand-sand/20"
+                  className="p-1 rounded-full bg-white hover:bg-brand-gold text-[#0E3524] transition-all duration-200 cursor-pointer shadow-xs border border-brand-sand/20"
                   title="Toggle Fullscreen"
                 >
                   {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}

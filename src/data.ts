@@ -732,14 +732,6 @@ export const LANDMARKS: Landmark[] = [
     description: 'Pristine white sand beach'
   },
   {
-    id: 'surfing-school',
-    name: 'Surfing School',
-    lat: 15.663984,
-    lng: 73.712960,
-    category: 'tourist',
-    description: 'Elite surfing instruction & gear rental'
-  },
-  {
     id: 'arambol-beach',
     name: 'Arambol Beach',
     lat: 15.677314,
