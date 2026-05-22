@@ -52,6 +52,7 @@ interface MapContainerProps {
   onSelectUnit: (id: string) => void;
   selectedBlock: 'A' | 'B' | 'C' | null;
   recenterTrigger?: number;
+  activeCategoryFilter: string | null;
 }
 
 export default function MapContainer({
@@ -60,6 +61,7 @@ export default function MapContainer({
   onSelectUnit,
   selectedBlock,
   recenterTrigger = 0,
+  activeCategoryFilter,
 }: MapContainerProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -67,6 +69,7 @@ export default function MapContainer({
   const pinsGroupRef = useRef<L.FeatureGroup | null>(null);
   const routerGroupRef = useRef<L.FeatureGroup | null>(null);
   const overpassGroupRef = useRef<L.FeatureGroup | null>(null);
+  const landmarksGroupRef = useRef<L.FeatureGroup | null>(null);
 
   const [sitemapUrl, setSitemapUrl] = useState<string | null>(null);
 
@@ -205,6 +208,7 @@ export default function MapContainer({
     pinsGroupRef.current = L.featureGroup().addTo(map);
     routerGroupRef.current = L.featureGroup().addTo(map);
     overpassGroupRef.current = L.featureGroup().addTo(map);
+    landmarksGroupRef.current = L.featureGroup().addTo(map);
 
     // Add entry beacon at the villa gateway
     const entryIcon = L.divIcon({
@@ -403,13 +407,25 @@ export default function MapContainer({
       });
       L.marker([lat, lng], { icon: labelIcon, interactive: false }).addTo(routerGroup);
     });
+  };
 
-    // Add all registry landmarks dynamically with dynamic hover tooltip popups
-    LANDMARKS.forEach((landmark) => {
+  // 5. Draw and update landmarks dynamically based on activeCategoryFilter
+  useEffect(() => {
+    const landmarksGroup = landmarksGroupRef.current;
+    if (!landmarksGroup) return;
+
+    landmarksGroup.clearLayers();
+
+    // Filter landmarks based on category
+    const filteredLandmarks = activeCategoryFilter
+      ? LANDMARKS.filter((landmark) => landmark.category === activeCategoryFilter)
+      : LANDMARKS;
+
+    filteredLandmarks.forEach((landmark) => {
       const siteLatLng = L.latLng(ENTRY_COORDINATES.lat, ENTRY_COORDINATES.lng);
       const distanceMeters = siteLatLng.distanceTo(L.latLng(landmark.lat, landmark.lng));
       const distanceKm = (distanceMeters / 1000).toFixed(1);
-      // Dynamic driving time: assuming natural narrow street speed averaging around 30 km/h (2 minutes per km)
+      // Dynamic driving time
       const driveMinutes = Math.max(1, Math.round(Number(distanceKm) * 2));
 
       // Category color palettes and inner SVG icons:
@@ -469,7 +485,7 @@ export default function MapContainer({
         className: `custom-landmark-pin-${landmark.id}`,
         html: `
           <div class="relative group select-none cursor-pointer" style="transform: translate(-50%, -100%); width: 24px; height: 32px;">
-            <!-- Tooltip Popup (Fades/slides up dynamically on hover) -->
+            <!-- Tooltip Popup -->
             <div class="absolute bottom-[36px] left-1/2 -translate-x-1/2 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-[9999] bg-[#FAF6EC] border border-[#0E3524]/20 px-3.5 py-2.5 rounded-xl shadow-xl flex flex-col items-center justify-center text-center whitespace-nowrap min-w-[170px] pointer-events-auto">
               <div class="text-[#0E3524] text-[10.5px] font-sans font-extrabold tracking-[0.08em] uppercase mb-0.5">
                 ${landmark.name}
@@ -482,7 +498,7 @@ export default function MapContainer({
               </div>
               ${landmark.description ? `<div class="text-[8px] text-[#505D41]/65 font-sans font-medium tracking-normal mt-1 border-t border-[#505D41]/10 pt-1 w-full text-center leading-relaxed whitespace-normal">${landmark.description}</div>` : ''}
               
-              <!-- Invisible hover bridge of absolute blank padding to prevent cursor fall-off -->
+              <!-- Invisible hover bridge -->
               <div class="absolute -bottom-3.5 left-0 right-0 h-3.5 bg-transparent"></div>
 
               <!-- Arrow Tip -->
@@ -501,9 +517,9 @@ export default function MapContainer({
         iconAnchor: [0, 0],
       });
 
-      L.marker([landmark.lat, landmark.lng], { icon: landmarkIcon, interactive: true }).addTo(routerGroup);
+      L.marker([landmark.lat, landmark.lng], { icon: landmarkIcon, interactive: true }).addTo(landmarksGroup);
     });
-  };
+  }, [activeCategoryFilter]);
 
   // Custom route drawing function using highly performant driving calculations (OSRM API)
   const calculateAndDrawRoute = async (landmarkId: string) => {

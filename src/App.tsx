@@ -20,6 +20,12 @@ import { APARTMENTS, BLOCK_META, DEFAULT_OVERLAY_PARAMS } from './data';
 import MapContainer from './components/MapContainer';
 import UnitDetailsModal from './components/UnitDetailsModal';
 
+const RED_DOT_APARTMENTS = new Set([
+  'A01', 'A02', 'A03', 'A04', 'A101', 'A104', 'A201',
+  'B01', 'B02', 'B201',
+  'C', 'C02', 'C03', 'C102', 'C103', 'C202'
+]);
+
 export default function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
@@ -37,6 +43,8 @@ export default function App() {
   // Site Overlay parameters
   const [overlayParams] = useState<OverlayParams>(DEFAULT_OVERLAY_PARAMS);
   const [recenterTrigger, setRecenterTrigger] = useState<number>(0);
+
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState<string | null>(null);
 
   // Initialize loading timer and state values
   useEffect(() => {
@@ -333,28 +341,29 @@ export default function App() {
                   <div className="grid grid-cols-4 gap-2">
                     {APARTMENTS.filter((apt) => apt.block === selectedBlock).map((apt) => {
                       const isActive = apt.id === selectedUnitId;
+                      const hasRedDot = RED_DOT_APARTMENTS.has(apt.id);
                       return (
                         <button
                           key={apt.id}
                           onClick={() => handleSelectUnit(apt.id)}
-                          className={`aspect-square w-full rounded-full border flex flex-col items-center justify-center font-serif text-[11px] font-bold tracking-wider transition-all duration-300 cursor-pointer
+                          className={`relative aspect-square w-full rounded-full border flex flex-col items-center justify-center font-serif text-[11px] font-bold tracking-wider transition-all duration-300 cursor-pointer
                             ${isActive
                               ? 'bg-[#5B6A4E] text-[#FAF6EC] border-[#5B6A4E] shadow-md scale-105 font-extrabold'
                               : 'bg-white hover:bg-[#5B6A4E]/10 hover:border-[#5B6A4E] text-brand-ink border-brand-sand/70'
                             }`}
                         >
                           {apt.id}
+                          {hasRedDot && (
+                            <span 
+                              className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white shadow-xs"
+                              style={{ transform: 'translate(25%, -25%)' }}
+                              aria-hidden="true"
+                            />
+                          )}
                         </button>
                       );
                     })}
                   </div>
-                </div>
-
-                {/* Descriptive block snippet */}
-                <div className="bg-[#FAF6EC] border border-brand-sand/50 p-4 rounded-lg mt-6">
-                  <p className="font-sans font-light text-[10.5px] text-brand-ink-soft leading-relaxed">
-                    {BLOCK_META[selectedBlock].description}
-                  </p>
                 </div>
 
               </div>
@@ -382,7 +391,7 @@ export default function App() {
                   }}
                   className="bg-white/85 border border-[#505D41]/20 hover:border-[#5B6A4E] rounded-lg py-2.5 px-3 text-center transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer hover:bg-white flex flex-col justify-center items-center"
                 >
-                  <span className="font-serif text-[11px] font-bold text-[#5C6B4F] tracking-wide">Block A</span>
+                  <span className="font-serif text-[11px] font-bold text-[#5C6B4F] tracking-wide font-medium">Block A</span>
                 </button>
                 <button
                   onClick={() => {
@@ -405,6 +414,48 @@ export default function App() {
               </div>
             </div>
 
+            {/* --- FILTERS SECTION --- */}
+            <div className="mt-8 pt-6 border-t border-[#505D41]/20">
+              <h3 className="font-sans text-[9px] font-bold tracking-[0.22em] uppercase text-[#5B6A4E] mb-3.5">
+                FILTERS
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setActiveCategoryFilter(null)}
+                  className={`border rounded-full py-1.5 px-3 text-center font-sans text-[10px] font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer
+                    ${activeCategoryFilter === null
+                      ? 'bg-[#5B6A4E] text-[#FAF6EC] border-[#5B6A4E] shadow-sm font-extrabold'
+                      : 'bg-white/85 border-[#505D41]/20 hover:border-[#5B6A4E] text-[#5C6B4F]'
+                    }`}
+                >
+                  All Pins
+                </button>
+                {[
+                  { id: 'tourist', label: 'Tourist Spots' },
+                  { id: 'restaurant', label: 'Restaurants' },
+                  { id: 'hotel', label: 'Hotels' },
+                  { id: 'school', label: 'Schools' },
+                  { id: 'airport', label: 'Airports' },
+                  { id: 'other', label: 'Other Spots' },
+                ].map((cat) => {
+                  const isActive = activeCategoryFilter === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setActiveCategoryFilter(isActive ? null : cat.id)}
+                      className={`border rounded-full py-1.5 px-3 text-center font-sans text-[10px] font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer
+                        ${isActive
+                          ? 'bg-[#5B6A4E] text-[#FAF6EC] border-[#5B6A4E] shadow-sm font-extrabold'
+                          : 'bg-white/85 border-[#505D41]/20 hover:border-[#5B6A4E] text-[#5C6B4F]'
+                        }`}
+                    >
+                      {cat.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
           </div>
 
         </div>
@@ -418,6 +469,7 @@ export default function App() {
           onSelectUnit={handleSelectUnit}
           selectedBlock={selectedBlock}
           recenterTrigger={recenterTrigger}
+          activeCategoryFilter={activeCategoryFilter}
         />
 
         {/* Top bar and Dev tools removed completely per user request */}
