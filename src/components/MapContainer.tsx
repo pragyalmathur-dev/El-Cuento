@@ -4,6 +4,26 @@ import { Apartment, OverlayParams } from '../types';
 import { APARTMENTS, ENTRY_COORDINATES } from '../data';
 
 const ROAD_COORDINATES: [number, number][] = [
+  [15.674008, 73.709286],
+  [15.673281, 73.709255],
+  [15.672773, 73.709426],
+  [15.671498, 73.710295],
+  [15.670488, 73.711576],
+  [15.670358, 73.712353],
+  [15.670331, 73.713479],
+  [15.670355, 73.713944],
+  [15.670817, 73.714251],
+  [15.671190, 73.714543],
+  [15.671611, 73.714889],
+  [15.672039, 73.715333],
+  [15.672527, 73.715509],
+  [15.672986, 73.717291],
+  [15.672992, 73.717695],
+  [15.672912, 73.718601],
+  [15.672937, 73.719106],
+  [15.673106, 73.720458],
+  [15.672925, 73.721691],
+  [15.672448, 73.722853],
   [15.672340, 73.723681],
   [15.672046, 73.725260],
   [15.671715, 73.726270],
@@ -347,12 +367,74 @@ export default function MapContainer({
     // Bold main road line highlighted in custom color #F4F6FC
     L.polyline(ROAD_COORDINATES, {
       color: '#F4F6FC',
-      weight: 4.5,
+      weight: 5.5,
       opacity: 1.0,
       lineCap: 'round',
       lineJoin: 'round',
       interactive: false,
     }).addTo(routerGroup);
+
+    // Mandrem Road Badges on requested coordinates (removed 15.672017, 73.736711 and 15.674813, 73.741185)
+    const badgePoints: [number, number][] = [
+      [15.671188, 73.729511],
+      [15.672418, 73.723099]
+    ];
+
+    badgePoints.forEach(([lat, lng]) => {
+      const labelIcon = L.divIcon({
+        className: 'custom-road-badge-wrapper',
+        html: `
+          <div class="absolute w-max flex items-center justify-center -translate-x-1/2 -translate-y-1/2 bg-[#0E3524] text-white text-[7.5px] font-sans font-black tracking-[0.08em] uppercase px-2 py-0.5 rounded-[4px] border border-[#184a32]/85 shadow-sm whitespace-nowrap select-none" style="width: max-content;">
+            MANDREM ROAD
+          </div>
+        `,
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
+      });
+      L.marker([lat, lng], { icon: labelIcon, interactive: false }).addTo(routerGroup);
+    });
+
+    // Add Mandrem Beach Pin at 15.670584, 73.708562 with an interactive hover popup/tooltip
+    const beachLat = 15.670584;
+    const beachLng = 73.708562;
+    const siteLatLng = L.latLng(ENTRY_COORDINATES.lat, ENTRY_COORDINATES.lng);
+    const distanceMeters = siteLatLng.distanceTo(L.latLng(beachLat, beachLng));
+    const distanceKm = (distanceMeters / 1000).toFixed(1);
+    // Dynamic driving time: assuming natural narrow street speed averaging around 30 km/h (2 minutes per km)
+    const driveMinutes = Math.max(1, Math.round(Number(distanceKm) * 2));
+
+    const beachIcon = L.divIcon({
+      className: 'custom-beach-pin-wrapper',
+      html: `
+        <div class="relative group select-none cursor-pointer" style="transform: translate(-50%, -100%); width: 32px; height: 42px;">
+          <!-- Tooltip Popup (Fades/slides up dynamically on hover) -->
+          <div class="absolute bottom-[48px] left-1/2 -translate-x-1/2 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-[9999] bg-[#F4F6FC] border border-[#0E3524]/20 px-4 py-3 rounded-xl shadow-xl flex flex-col items-center justify-center text-center whitespace-nowrap min-w-[160px]">
+            <div class="text-[#0E3524] text-[11px] font-sans font-extrabold tracking-[0.08em] uppercase mb-1">
+              MANDREM BEACH
+            </div>
+            <div class="text-[#505D41] text-[9.5px] font-sans font-bold tracking-[0.04em] uppercase mb-0.5">
+              ${driveMinutes} MIN DRIVE
+            </div>
+            <div class="text-[#505D41]/70 text-[9px] font-sans font-semibold tracking-[0.04em] uppercase">
+              ${distanceKm} KM AWAY
+            </div>
+            <!-- Arrow Tip -->
+            <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#F4F6FC] border-r border-b border-[#0E3524]/10 rotate-45"></div>
+          </div>
+
+          <!-- Drop Pin SVG Visual (white outer contour, deep green filler, white core dot) -->
+          <svg viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-md hover:scale-110 active:scale-95 transition-transform duration-200">
+            <path d="M16 0C7.16 0 0 7.16 0 16C0 28 16 42 16 42C16 42 32 28 32 16C32 7.16 24.84 0 16 0Z" fill="white"/>
+            <path d="M16 3C8.82 3 3 8.82 3 16C3 25.2 16 37 16 37C16 37 29 25.2 29 16C29 8.82 23.18 3 16 3Z" fill="#0E3524"/>
+            <circle cx="16" cy="16" r="4.5" fill="white"/>
+          </svg>
+        </div>
+      `,
+      iconSize: [0, 0],
+      iconAnchor: [0, 0],
+    });
+
+    L.marker([beachLat, beachLng], { icon: beachIcon, interactive: true }).addTo(routerGroup);
   };
 
   // Custom Zoom Handlers

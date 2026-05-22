@@ -29,6 +29,11 @@ export default function App() {
   const [weatherTemp, setWeatherTemp] = useState<number>(31); // Average tropical Goa temperature
   const [weatherDesc, setWeatherDesc] = useState<string>('Bright Sun');
   
+  // Render Gallery popup states
+  const [activeRenderGroup, setActiveRenderGroup] = useState<'site-view' | 'block-a' | 'block-b' | 'block-c' | null>(null);
+  const [renderImageIndex, setRenderImageIndex] = useState<number>(0);
+  const [renderImageErrors, setRenderImageErrors] = useState<Record<string, boolean>>({});
+
   // Site Overlay parameters
   const [overlayParams] = useState<OverlayParams>(DEFAULT_OVERLAY_PARAMS);
   const [recenterTrigger, setRecenterTrigger] = useState<number>(0);
@@ -355,6 +360,51 @@ export default function App() {
               </div>
             )}
 
+            {/* --- RENDERS SECTION --- */}
+            <div className="mt-8 pt-6 border-t border-[#505D41]/20">
+              <h3 className="font-sans text-[9px] font-bold tracking-[0.22em] uppercase text-[#5B6A4E] mb-3.5">
+                RENDERS
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    setActiveRenderGroup('site-view');
+                    setRenderImageIndex(0);
+                  }}
+                  className="bg-white/85 border border-[#505D41]/20 hover:border-[#5B6A4E] rounded-lg py-2.5 px-3 text-center transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer hover:bg-white flex flex-col justify-center items-center"
+                >
+                  <span className="font-serif text-[11px] font-bold text-[#5C6B4F] tracking-wide">Site View</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveRenderGroup('block-a');
+                    setRenderImageIndex(0);
+                  }}
+                  className="bg-white/85 border border-[#505D41]/20 hover:border-[#5B6A4E] rounded-lg py-2.5 px-3 text-center transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer hover:bg-white flex flex-col justify-center items-center"
+                >
+                  <span className="font-serif text-[11px] font-bold text-[#5C6B4F] tracking-wide">Block A</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveRenderGroup('block-b');
+                    setRenderImageIndex(0);
+                  }}
+                  className="bg-white/85 border border-[#505D41]/20 hover:border-[#5B6A4E] rounded-lg py-2.5 px-3 text-center transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer hover:bg-white flex flex-col justify-center items-center"
+                >
+                  <span className="font-serif text-[11px] font-bold text-[#5C6B4F] tracking-wide">Block B</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveRenderGroup('block-c');
+                    setRenderImageIndex(0);
+                  }}
+                  className="bg-white/85 border border-[#505D41]/20 hover:border-[#5B6A4E] rounded-lg py-2.5 px-3 text-center transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer hover:bg-white flex flex-col justify-center items-center"
+                >
+                  <span className="font-serif text-[11px] font-bold text-[#5C6B4F] tracking-wide">Block C</span>
+                </button>
+              </div>
+            </div>
+
           </div>
 
         </div>
@@ -379,6 +429,144 @@ export default function App() {
           unit={activeUnit}
           onClose={() => setSelectedUnitId(null)}
         />
+      )}
+
+      {/* --- 5. RENDER GALLERY DIALOG / DIALOGUE BOX --- */}
+      {activeRenderGroup && (
+        <div 
+          id="render-gallery-overlay"
+          className="fixed inset-0 z-50 bg-[#FAF6EC]/97 backdrop-blur-md flex flex-col justify-between p-6 md:p-12 overflow-y-auto"
+          role="dialog"
+          aria-modal="true"
+        >
+          {/* Top Panel: Title, Navigation, and Close */}
+          <div className="w-full max-w-5xl mx-auto flex justify-between items-start mb-6">
+            <div>
+              <h2 className="font-serif text-3xl font-light tracking-[0.05em] text-[#0E3524] uppercase">
+                {activeRenderGroup === 'site-view' ? 'AERIAL VIEW' : 
+                 activeRenderGroup === 'block-a' ? 'BLOCK A RENDER' :
+                 activeRenderGroup === 'block-b' ? 'BLOCK B RENDER' : 'BLOCK C RENDER'}
+              </h2>
+              <p className="font-sans text-[10px] font-bold tracking-[0.2em] text-[#505D41]/80 uppercase mt-2">
+                PERSPECTIVE {renderImageIndex + 1} OF {
+                  activeRenderGroup === 'block-c' ? 3 : 1
+                }
+              </p>
+            </div>
+            
+            <button
+              onClick={() => {
+                setActiveRenderGroup(null);
+                setRenderImageIndex(0);
+              }}
+              className="p-2.5 rounded-full bg-white border border-brand-sand/45 hover:border-[#5B6A4E]/35 text-brand-ink-soft hover:text-[#0E3524] transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-sm flex items-center justify-center"
+              aria-label="Close dialog"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Center Stage: Image and Left/Right Arrows */}
+          <div className="flex-1 w-full max-w-5xl mx-auto flex items-center justify-center relative my-auto">
+            {/* Left Nav Arrow (Only for Block C multiple images) */}
+            {activeRenderGroup === 'block-c' && (
+              <button
+                onClick={() => {
+                  setRenderImageIndex((prev) => (prev === 0 ? 2 : prev - 1));
+                }}
+                className="absolute left-2 md:left-4 z-10 p-3 rounded-full bg-white/80 hover:bg-white border border-[#505D41]/20 text-[#0E3524] shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center"
+                aria-label="Previous Perspective"
+              >
+                <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+              </button>
+            )}
+
+            {/* Render Box Container */}
+            <div className="relative w-full aspect-video md:max-h-[65vh] rounded-2xl overflow-hidden shadow-2xl border border-[#0E3524]/5 bg-transparent flex items-center justify-center">
+              {(() => {
+                const currentImageName = activeRenderGroup === 'site-view' ? 'site-view.jpg' :
+                  activeRenderGroup === 'block-a' ? 'El Cuento_ Block A_ 2BHKs.jpg' :
+                  activeRenderGroup === 'block-b' ? 'El Cuento_ Block B_ 3BHKs.jpg' :
+                  renderImageIndex === 0 ? 'El Cuento_ Block C_ 3BHKs.jpg' :
+                  renderImageIndex === 1 ? 'El Cuento_ Block C_ 3BHKs_ Rear.jpg' :
+                  'El Cuento_ Block C_ 3BHKs_ Side.jpg';
+
+                const labelText = activeRenderGroup === 'site-view' ? 'Aerial Site View Perspective' :
+                  activeRenderGroup === 'block-a' ? 'Block A - 2BHKs Overview' :
+                  activeRenderGroup === 'block-b' ? 'Block B - 3BHKs Overview' :
+                  renderImageIndex === 0 ? 'Block C - 3BHKs Perspective' :
+                  renderImageIndex === 1 ? 'Block C - 3BHKs Rear View' :
+                  'Block C - 3BHKs Side View';
+
+                if (renderImageErrors[currentImageName]) {
+                  return (
+                    <div className="flex flex-col items-center justify-center text-center p-8 bg-gradient-to-br from-brand-cream-soft to-[#FAF6EC] w-full h-full border border-brand-sand/50 rounded-2xl">
+                      <div className="w-16 h-16 rounded-full bg-[#0E3524]/5 flex items-center justify-center text-[#5B6A4E] mb-4">
+                        <Sparkles className="w-7 h-7" />
+                      </div>
+                      <h4 className="font-serif text-lg font-bold text-[#0E3524] tracking-wide mb-1.5 uppercase">
+                        {labelText}
+                      </h4>
+                      <div className="font-mono text-[10px] text-[#505D41]/80 bg-[#FAF6EC] border border-brand-sand/70 px-3 py-1 rounded inline-block uppercase tracking-wider mb-3 select-all font-semibold">
+                        {currentImageName}
+                      </div>
+                      <p className="font-sans font-light text-xs text-brand-ink-soft max-w-sm">
+                        Render image container active. Place the file inside your assets/public folder; it will display instantly once uploaded.
+                      </p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <img
+                    src={`/${currentImageName}`}
+                    alt={labelText}
+                    onError={() => {
+                      setRenderImageErrors((prev) => ({ ...prev, [currentImageName]: true }));
+                    }}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover transition-opacity duration-300"
+                  />
+                );
+              })()}
+            </div>
+
+            {/* Right Nav Arrow (Only for Block C multiple images) */}
+            {activeRenderGroup === 'block-c' && (
+              <button
+                onClick={() => {
+                  setRenderImageIndex((prev) => (prev === 2 ? 0 : prev + 1));
+                }}
+                className="absolute right-2 md:right-4 z-10 p-3 rounded-full bg-white/80 hover:bg-white border border-[#505D41]/20 text-[#0E3524] shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center"
+                aria-label="Next Perspective"
+              >
+                <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+              </button>
+            )}
+          </div>
+
+          {/* Bottom Indicators for Block C (Multiple views) */}
+          {activeRenderGroup === 'block-c' && (
+            <div className="w-full max-w-5xl mx-auto flex justify-center items-center gap-3 mt-6">
+              {[0, 1, 2].map((idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setRenderImageIndex(idx)}
+                  className={`h-2 transition-all duration-300 rounded-full cursor-pointer
+                    ${idx === renderImageIndex ? 'w-8 bg-[#0E3524]' : 'w-2.5 bg-[#505D41]/25 hover:bg-[#505D41]/45'}`}
+                  aria-label={`Go to Perspective ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
+          
+          {/* Bottom brand signature */}
+          <div className="w-full max-w-5xl mx-auto text-center mt-6">
+            <span className="font-sans text-[8.5px] font-extrabold tracking-[0.3em] text-[#505D41]/60 uppercase font-bold">
+              EL CUENTO · BOUTIQUE RESIDENCES
+            </span>
+          </div>
+        </div>
       )}
 
     </div>
