@@ -182,6 +182,7 @@ export default function MapContainer({
       minZoom: 15,
       maxZoom: 21,
       zoomControl: false, // will use a custom-themed zoom widget
+      attributionControl: false, // hide Leaflet / Esri / tile layer attribution panel on the map
       preferCanvas: true,
       zoomSnap: 0.1,
       zoomDelta: 0.5,
