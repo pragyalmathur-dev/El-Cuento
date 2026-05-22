@@ -258,6 +258,34 @@ export default function UnitDetailsModal({ unit, onClose }: UnitDetailsModalProp
             onTouchEnd={handleTouchEnd}
           >
 
+            {/* Tactile Floating Zoom Control Panel Over the Image */}
+            <div className="absolute right-6 top-6 z-30 flex flex-col gap-2 pointer-events-auto">
+              <button
+                onClick={handleZoomIn}
+                id="floating-btn-zoomin"
+                className="w-11 h-11 rounded-full bg-white/95 hover:bg-[#0E3524] hover:text-[#FAF6EC] text-[#0E3524] flex items-center justify-center shadow-lg border border-brand-sand/40 transition-all duration-200 cursor-pointer active:scale-95"
+                title="Zoom In"
+              >
+                <ZoomIn className="w-5.5 h-5.5" strokeWidth={2.2} />
+              </button>
+              <button
+                onClick={handleZoomOut}
+                id="floating-btn-zoomout"
+                className="w-11 h-11 rounded-full bg-white/95 hover:bg-[#0E3524] hover:text-[#FAF6EC] text-[#0E3524] flex items-center justify-center shadow-lg border border-brand-sand/40 transition-all duration-200 cursor-pointer active:scale-95"
+                title="Zoom Out"
+              >
+                <ZoomOut className="w-5.5 h-5.5" strokeWidth={2.2} />
+              </button>
+              <button
+                onClick={handleReset}
+                id="floating-btn-reset"
+                className="w-11 h-11 rounded-full bg-white/95 hover:bg-[#0E3524] hover:text-[#FAF6EC] text-[#0E3524] flex items-center justify-center shadow-lg border border-brand-sand/40 transition-all duration-200 cursor-pointer active:scale-95"
+                title="Reset View"
+              >
+                <RotateCcw className="w-5 h-5" strokeWidth={2.2} />
+              </button>
+            </div>
+
             {/* Interactive Image Display Area */}
             <div className="flex-1 flex items-center justify-center p-6 h-full w-full">
               <img
@@ -279,7 +307,7 @@ export default function UnitDetailsModal({ unit, onClose }: UnitDetailsModalProp
               <span className="text-[9px] tracking-[0.16em] font-sans uppercase font-bold text-[#7E8675] select-none block">
                 {scale > 1.05 
                   ? `Zoomed: ${(scale * 100).toFixed(0)}% · Drag to inspect` 
-                  : 'Pinch or Drag to explore details'}
+                  : 'Pinch, Drag, or use floating buttons to explore details'}
               </span>
 
               <div className="flex items-center gap-1.5 backdrop-blur shadow-sm bg-white/60 p-1.5 rounded-full border border-brand-sand/30">
