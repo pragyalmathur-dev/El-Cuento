@@ -5,6 +5,18 @@ import { APARTMENTS, ENTRY_COORDINATES, LANDMARKS } from '../data';
 import { X } from 'lucide-react';
 
 const ROAD_COORDINATES: [number, number][] = [
+  [15.685757, 73.711181],
+  [15.684172, 73.710976],
+  [15.683663, 73.710800],
+  [15.682866, 73.710716],
+  [15.680952, 73.711046],
+  [15.680098, 73.710878],
+  [15.678479, 73.711060],
+  [15.677627, 73.711157],
+  [15.676023, 73.710669],
+  [15.675368, 73.709970],
+  [15.675128, 73.709382],
+  [15.674019, 73.709268],
   [15.674008, 73.709286],
   [15.673281, 73.709255],
   [15.672773, 73.709426],
@@ -404,6 +416,7 @@ export default function MapContainer({
     // Road Badges on requested coordinates
     const badgePoints: { coords: [number, number]; label: string }[] = [
       { coords: [15.671307, 73.714598], label: 'MANDREM ROAD' },
+      { coords: [15.682257, 73.710777], label: 'MANDREM ROAD' },
       { coords: [15.674112, 73.739548], label: 'MANDREM ROAD' },
       { coords: [15.671544, 73.735850], label: 'TOWARDS MOPA AIRPORT ->' }
     ];
