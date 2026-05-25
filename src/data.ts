@@ -756,6 +756,22 @@ export const LANDMARKS: Landmark[] = [
     description: 'Luxury upscale lodging & premium amenities'
   },
   {
+    id: 'riva-beach-resort',
+    name: 'Riva Beach Resort',
+    lat: 15.670808,
+    lng: 73.710285,
+    category: 'hotel',
+    description: 'Premium beachside resort with spectacular ocean-view lodging'
+  },
+  {
+    id: 'elsewhere',
+    name: 'Elsewhere',
+    lat: 15.659123,
+    lng: 73.714228,
+    category: 'hotel',
+    description: 'Charming beachside hotel and heritage villas'
+  },
+  {
     id: 'cafe-chia',
     name: 'Chia',
     lat: 15.664471,
@@ -789,11 +805,19 @@ export const LANDMARKS: Landmark[] = [
   },
   {
     id: 'artjuna-cafe',
-    name: 'Artjuna Café',
-    lat: 15.580594,
-    lng: 73.747614,
+    name: 'Artjuna Cafe',
+    lat: 15.666026,
+    lng: 73.714207,
     category: 'restaurant',
     description: 'Famous green lifestyle garden cafe & boutique'
+  },
+  {
+    id: 'dunes-restaurant',
+    name: 'Dunes Restaurant',
+    lat: 15.666228,
+    lng: 73.712148,
+    category: 'restaurant',
+    description: 'Popular restaurant offering multi-cuisine beach dining'
   },
   {
     id: 'mopa-airport',
