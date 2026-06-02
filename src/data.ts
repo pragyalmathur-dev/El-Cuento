@@ -317,6 +317,26 @@ export const APARTMENTS: Apartment[] = [
     floorplanAsset: '/assets/floorplan_a02.webp'
   },
   {
+    id: 'A303',
+    block: 'A',
+    name: 'A303 · Crown Studio',
+    tag: '1BHK · Level 3 Sanctuary-East',
+    config: '1 BHK',
+    configSub: 'one bedroom, one bath',
+    area: '64 sq m',
+    areaSub: '≈ 688 sq ft',
+    aspect: 'East-facing',
+    aspectSub: 'glorious morning dome glow',
+    outdoor: 'High dramatic sunrise veranda',
+    outdoorSub: 'private east-facing sky deck',
+    features: [
+      'A pristine top-floor studio featuring high rafter ceilings and gorgeous morning vistas over the orchards.'
+    ],
+    variant: '1bhk',
+    svgCoord: [261, 1025],
+    floorplanAsset: '/assets/floorplan_a03.webp'
+  },
+  {
     id: 'A304',
     block: 'A',
     name: 'A304 · Crown Pavilion',
