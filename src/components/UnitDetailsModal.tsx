@@ -9,6 +9,10 @@ const RED_DOT_APARTMENTS = new Set([
   'C', 'C02', 'C03', 'C102', 'C103', 'C202'
 ]);
 
+const YELLOW_DOT_APARTMENTS = new Set([
+  'A102', 'A103', 'A202', 'A203', 'C203'
+]);
+
 interface UnitDetailsModalProps {
   unit: Apartment | null;
   onClose: () => void;
@@ -29,6 +33,7 @@ export default function UnitDetailsModal({ unit, onClose }: UnitDetailsModalProp
   const pinchStartRef = useRef<{ d: number; s: number } | null>(null);
 
   const isSold = unit ? RED_DOT_APARTMENTS.has(unit.id) : false;
+  const isOnHold = unit ? YELLOW_DOT_APARTMENTS.has(unit.id) : false;
 
   // Sync state when selected apartment unit changes
   useEffect(() => {
@@ -203,6 +208,11 @@ export default function UnitDetailsModal({ unit, onClose }: UnitDetailsModalProp
                 <>
                   <span className="text-red-500 font-bold">•</span>
                   <span className="text-red-500 font-extrabold tracking-[0.22em]">Sold</span>
+                </>
+              ) : isOnHold ? (
+                <>
+                  <span className="text-amber-500 font-bold">•</span>
+                  <span className="text-amber-500 font-extrabold tracking-[0.22em]">On Hold</span>
                 </>
               ) : (
                 <>

@@ -26,6 +26,10 @@ const RED_DOT_APARTMENTS = new Set([
   'C', 'C02', 'C03', 'C102', 'C103', 'C202'
 ]);
 
+const YELLOW_DOT_APARTMENTS = new Set([
+  'A102', 'A103', 'A202', 'A203', 'C203'
+]);
+
 export default function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
@@ -342,6 +346,7 @@ export default function App() {
                     {APARTMENTS.filter((apt) => apt.block === selectedBlock).map((apt) => {
                       const isActive = apt.id === selectedUnitId;
                       const hasRedDot = RED_DOT_APARTMENTS.has(apt.id);
+                      const hasYellowDot = YELLOW_DOT_APARTMENTS.has(apt.id);
                       return (
                         <button
                           key={apt.id}
@@ -356,6 +361,13 @@ export default function App() {
                           {hasRedDot && (
                             <span 
                               className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white shadow-xs"
+                              style={{ transform: 'translate(25%, -25%)' }}
+                              aria-hidden="true"
+                            />
+                          )}
+                          {hasYellowDot && (
+                            <span 
+                              className="absolute top-1 right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border border-white shadow-xs"
                               style={{ transform: 'translate(25%, -25%)' }}
                               aria-hidden="true"
                             />
