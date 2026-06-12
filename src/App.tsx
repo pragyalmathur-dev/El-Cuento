@@ -21,13 +21,12 @@ import MapContainer from './components/MapContainer';
 import UnitDetailsModal from './components/UnitDetailsModal';
 
 const RED_DOT_APARTMENTS = new Set([
-  'A01', 'A02', 'A03', 'A04', 'A101', 'A104', 'A201',
+  'A01', 'A02', 'A03', 'A04', 'A101', 'A102', 'A103', 'A104', 'A201', 'A202', 'A203',
   'B01', 'B02', 'B201',
-  'C', 'C02', 'C03', 'C102', 'C103', 'C202'
+  'C', 'C02', 'C03', 'C102', 'C103', 'C202', 'C203'
 ]);
 
-const YELLOW_DOT_APARTMENTS = new Set([
-  'A102', 'A103', 'A202', 'A203', 'C203'
+const YELLOW_DOT_APARTMENTS = new Set<string>([
 ]);
 
 export default function App() {
